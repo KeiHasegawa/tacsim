@@ -1,0 +1,8 @@
+#! /bin/csh -vxf
+
+hcpp.exe call_Us.x64.vs.c -o call_Us.x64.vs.i
+setenv CC1GENERATOR $LANG_PROJECT_ROOT/bin/intel.dll
+hcc1.exe call_Us.x64.vs.i --simple-medium --generator-option \( --debug --ms \) -o call_Us.x64.vs.s
+perl conv.pl call_Us.x64.vs.s > call_Us.x64.vs.asm
+
+rm -f x64/Debug/call_Us.x64.vs.obj
