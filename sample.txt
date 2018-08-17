@@ -1,8 +1,11 @@
-# 1 "test000.c"
+# 1 "test001.c"
 # 1 "<built-in>"
 # 1 "<command-line>"
-# 1 "test000.c"
-# 10 "test000.c"
+# 1 "test001.c"
+
+
+
+
 # 1 "/usr/include/stdio.h" 1 3 4
 # 29 "/usr/include/stdio.h" 3 4
 # 1 "/usr/include/_ansi.h" 1 3 4
@@ -1508,128 +1511,27 @@ _putchar_unlocked(int _c)
 }
 # 797 "/usr/include/stdio.h" 3 4
 
-# 11 "test000.c" 2
-# 1 "test000.h" 1
+# 6 "test001.c" 2
 
 
+# 7 "test001.c"
+void f(int (*)(char*));
 
-
-# 4 "test000.h"
-extern int a;
-# 12 "test000.c" 2
-void test00(void)
-{
-  int (*pf)(const char* 
-# 14 "test000.c" 3 4
-                       restrict
-# 14 "test000.c"
-                                 , ...) = printf;
-  (*pf)("`test00' called\n");
-  printf("a = %d\n", a);
-}
-
-int a = 1;
-
-
-
-
-
-
-# 1 "./b" 1 3 4
-
-
-
-
-# 4 "./b" 3 4
-extern int b;
-# 27 "test000.c" 2
-# 1 "./cd" 1 3 4
-
-
-
-extern int cd;
-# 28 "test000.c" 2
-
-# 28 "test000.c"
-void test01(void)
-{
-  printf("`test01' called\n");
-  printf("b = %d\n", b);
-  printf("cd = %d\n", cd);
-}
-
-int b = 2;
-int cd = 3;
-
-
-
-
-
-
-# 1 "./#" 1 3 4
-
-
-
-
-# 4 "./#" 3 4
-extern int e;
-# 44 "test000.c" 2
-# 1 "./!" 1 3 4
-
-
-
-extern int f;
-# 45 "test000.c" 2
-
-# 45 "test000.c"
-void test02(void)
-{
-  printf("`test02' called\n");
-  printf("e = %d\n", e);
-  printf("f = %d\n", f);
-}
-
-int e = 4;
-int f = 5;
-
-
-
-
-
-
-# 1 "b" 1
-# 61 "test000.c" 2
-# 1 "cd" 1
-# 62 "test000.c" 2
-void test03(void)
-{
-  printf("`test03' called\n");
-  printf("b = %d\n", b);
-  printf("cd = %d\n", cd);
-}
-
-
-
-
-
-
-# 1 "#" 1
-# 75 "test000.c" 2
-# 1 "!" 1
-# 76 "test000.c" 2
-void test04(void)
-{
-  printf("`test02' called\n");
-  printf("e = %d\n", e);
-  printf("f = %d\n", f);
-}
+int g(char*);
 
 int main(void)
 {
-  test00();
-  test01();
-  test02();
-  test03();
-  test04();
+  f(&g);
   return 0;
+}
+
+void f(int (*pf)(char* a))
+{
+  char c[] = "composite test string";
+  printf("(*pf)(&c[0]) = %d\n", (*pf)(&c[0]));
+}
+
+int g(char* a)
+{
+  return printf("`g' called with \"%s\"\n", a);
 }

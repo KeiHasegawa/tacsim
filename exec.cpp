@@ -1000,13 +1000,14 @@ void tacsim::call_impl::common(COMPILER::var* x, void* pf, const COMPILER::func_
 	parameters.clear();
 	const type* T = ft->return_type();
 	int size = T->size();
-	U r; r.vp = T->aggregate() ? new char[size] : 0;
+	bool aggr = T->aggregate();
+	U r; r.vp = aggr ? new char[size] : 0;
 	kind_t rk = conv_type(T);
 	uks* begin = Us.data();
 	uks* end = begin + Us.size();
 	call_Us(&r, pf, begin, end, nth, rk);
 	if (x) {
-		void* p = T->aggregate() ? r.vp : &r;
+		void* p = aggr ? r.vp : &r;
 		memcpy(getaddr(x), p, size);
 	}
 }

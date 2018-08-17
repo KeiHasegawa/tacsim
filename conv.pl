@@ -44,7 +44,7 @@ while ( <> ) {
 	}
 	$_ = <>;
 	chop;
-	if (!/mov 	QWORD PTR \[rbx\], rax/){
+	if (!/mov	QWORD PTR \[rbx\], rax/){
 	    die "unexpected(7) :", $_,"\n";
 	}
 	next;

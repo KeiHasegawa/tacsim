@@ -45,11 +45,24 @@ call_Us(union U* r, void* pf, struct S* begin, struct S* end, int nth, enum kind
   void* rvp = r->vp;
   int offset = rvp ? 4 : 0;  
   int delta = accumulate(begin, end, offset, add_size);
-  if (int n = delta&15)
+  int n = delta&15;
+  if (n)
     delta += 16 - n;
   char* esp;
+#ifdef __GNUC__
   asm("sub	%1, %%esp\n\t"
       "mov	%%esp, %0" : "=r"(esp) : "r"(delta));
+#endif // __GNUC__
+#ifdef _MSC_VER
+#if 0
+  asm("sub	esp, %1\n\t"
+      "mov	%0, esp" : "=r"(esp) : "r"(delta));
+#else
+  asm("mov	eax, DWORD PTR [ebp-8]");  // eax <- delta
+  asm("sub	esp, eax");
+  asm("mov	DWORD PTR [ebp-12], esp");  // esp(variable) <- esp(reg)
+#endif
+#endif // _MSC_VER
 
   if (rvp)
     *(void**)esp = rvp;
@@ -163,7 +176,8 @@ call_Us(union U* r, void* pf, struct S* begin, struct S* end, int nth, enum kind
     ((void (*)(void))pf)();
     break;
   case LD:
-    r->ld = ((long double (*)(void))pf)();    
+    r->ld = ((long double (*)(void))pf)();
+    break;
   case DOUBLE:
     r->d = ((double (*)(void))pf)();
     break;
@@ -175,4 +189,3 @@ call_Us(union U* r, void* pf, struct S* begin, struct S* end, int nth, enum kind
     break;
   }
 }
-

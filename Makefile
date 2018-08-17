@@ -17,7 +17,6 @@ OBJS = $(SRCS:.cpp=.o)
 TACSIM_DLL = tacsim.dll
 
 DEBUG_FLAG = -g
-#DEBUG_FLAG = -O3
 PIC_FLAG = -fPIC
 CXXFLAGS = $(DEBUG_FLAG) $(PIC_FLAG) -I$(HCC1_SRCDIR) -w
 
