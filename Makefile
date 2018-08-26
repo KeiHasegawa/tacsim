@@ -42,3 +42,6 @@ clean:
 	$(RM) *.o *~ $(TACSIM_DLL) x64 Debug .vs
 	$(RM) call_Us.x64.vs.i call_Us.x64.vs.s
 	$(RM) -r .vs x64 Debug Release
+
+call_Us.x86.gxx.o:call_Us.x86.gxx.cpp
+	$(CXX) -g $(PIC_FLAG) -I$(HCC1_SRCDIR) -w -c -o $@ $<

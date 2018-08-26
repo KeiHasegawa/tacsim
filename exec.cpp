@@ -1065,7 +1065,7 @@ tacsim::call_impl::uks tacsim::call_impl::conv(std::pair<void*, const COMPILER::
 		assert(T->aggregate());
 		u.vp = new char[size];
 	}
-	uks ret = { u, conv_type(T), T->size() };
+	uks ret = { u, conv_type(T), size };
 	return ret;
 }
 
