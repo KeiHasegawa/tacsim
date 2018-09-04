@@ -1005,11 +1005,6 @@ void tacsim::call_impl::common(COMPILER::var* x, void* pf, const COMPILER::func_
   kind_t rk = conv_type(T);
   uks* begin = Us.data();
   uks* end = begin + Us.size();
-  static int debug;
-  cout << "debug = " << ++debug << '\n';
-  if (debug == 11) {
-          debug = debug;
-  }
   call_Us(&r, pf, begin, end, nth, rk);
   if (x) {
     void* p = aggr ? r.vp : &r;
