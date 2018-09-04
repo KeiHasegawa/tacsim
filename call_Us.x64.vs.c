@@ -37,18 +37,18 @@ call_Us_subr(struct uks* p, int nth, int narg, void* rvp, union U* xmm, int* xmm
       xmm->d = d;
       *xmm_flt = 0;
       if (rvp)
-	gpr2->d = d;
+        gpr2->d = d;
       else
-	gpr1->d = d;
+        gpr1->d = d;
     }
     else {
       if (kind == FLOAT){
         xmm->f = p->m_u.f;
-	*xmm_flt = 1;
+        *xmm_flt = 1;
       }
       else {
         xmm->d = p->m_u.d;
-	*xmm_flt = 0;
+        *xmm_flt = 0;
       }
     }
     break;
@@ -73,15 +73,15 @@ call_Us_subr(struct uks* p, int nth, int narg, void* rvp, union U* xmm, int* xmm
   case S16:
     if ( nth <= narg ) {
       if ( rvp )
-	gpr2->s32 = p->m_u.s16;
+        gpr2->s32 = p->m_u.s16;
       else
-	gpr1->s32 = p->m_u.s16;
+        gpr1->s32 = p->m_u.s16;
     }
     else {
       if ( rvp )
-	gpr2->s16 = p->m_u.s16;
+        gpr2->s16 = p->m_u.s16;
       else
-	gpr1->s16 = p->m_u.s16;
+        gpr1->s16 = p->m_u.s16;
     }
     break;
   case U8:
@@ -93,15 +93,15 @@ call_Us_subr(struct uks* p, int nth, int narg, void* rvp, union U* xmm, int* xmm
   case S8:
     if ( nth <= narg ){
       if ( rvp )
-	gpr2->s32 = p->m_u.s8;
+        gpr2->s32 = p->m_u.s8;
       else
-	gpr1->s32 = p->m_u.s8;
+        gpr1->s32 = p->m_u.s8;
     }
     else {
       if ( rvp )
-	gpr2->s8 = p->m_u.s8;
+        gpr2->s8 = p->m_u.s8;
       else
-	gpr1->s8 = p->m_u.s8;
+        gpr1->s8 = p->m_u.s8;
     }
     break;
   case VP: case REC:
@@ -122,7 +122,7 @@ char* RSP_REG;
 
 void
 call_Us(union U* r, void* pf, struct uks* begin, struct uks* end,
-	int nth, enum kind_t rk)
+        int nth, enum kind_t rk)
 {
   RCX_REG.vp = RDX_REG.vp = R8_REG.vp = R9_REG.vp =
   XMM0_REG.vp = XMM1_REG.vp = XMM2_REG.vp = XMM3_REG.vp = 0;
@@ -163,10 +163,10 @@ call_Us(union U* r, void* pf, struct uks* begin, struct uks* end,
         float f = p->m_u.f;
         if ( nth <= narg ) {
           double d = f;
-	  *(double*)(RSP_REG+offset) = d;
+          *(double*)(RSP_REG+offset) = d;
         }
         else
-	  *(float*)(RSP_REG+offset) = f;
+          *(float*)(RSP_REG+offset) = f;
       }
       break;
     case U64: case S64:
@@ -183,10 +183,10 @@ call_Us(union U* r, void* pf, struct uks* begin, struct uks* end,
         int16_t s16 = p->m_u.s16;
         if ( nth <= narg ) {
           int tmp = s16;
-	  *(int32_t*)(RSP_REG+offset) = tmp;
+          *(int32_t*)(RSP_REG+offset) = tmp;
         }
         else
-	  *(int16_t*)(RSP_REG+offset) = s16;
+          *(int16_t*)(RSP_REG+offset) = s16;
       }
       break;
     case U8:
@@ -197,15 +197,15 @@ call_Us(union U* r, void* pf, struct uks* begin, struct uks* end,
         int8_t s8 = p->m_u.s8;
         if ( nth <= narg ) {
           int tmp = s8;
-	  *(int32_t*)(RSP_REG+offset) = tmp;	  
+          *(int32_t*)(RSP_REG+offset) = tmp;  
         }
         else
-	  *(int8_t*)(RSP_REG+offset) = s8;	  
+          *(int8_t*)(RSP_REG+offset) = s8;  
       }
       break;
     case VP:
     case REC:
-	  *(void**)(RSP_REG+offset) = p->m_u.vp;
+          *(void**)(RSP_REG+offset) = p->m_u.vp;
       break;
     }
   }

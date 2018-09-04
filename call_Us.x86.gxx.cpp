@@ -32,12 +32,16 @@ static inline int add_size(int n, struct S* p)
 }
 
 static inline int accumulate(struct S* begin, struct S* end, int n,
-			     int (*add)(int, struct S*))
+                             int (*add)(int, struct S*))
 {
   for ( struct S* p = begin ; p != end ; ++p )
     n = add(n, p);
   return n;
 }
+
+#ifdef _MSC_VER
+static int wa_for_delta(int n){ return n + 3; }
+#endif // _MSC_VER
 
 extern "C" void
 call_Us(union U* r, void* pf, struct S* begin, struct S* end, int nth, enum kind_t rk)
@@ -50,17 +54,18 @@ call_Us(union U* r, void* pf, struct S* begin, struct S* end, int nth, enum kind
     delta += 16 - n;
   char* esp;
 #ifdef __GNUC__
-  asm("sub	%1, %%esp\n\t"
-      "mov	%%esp, %0" : "=r"(esp) : "r"(delta));
+  asm("sub        %1, %%esp\n\t"
+      "mov        %%esp, %0" : "=r"(esp) : "r"(delta));
 #endif // __GNUC__
 #ifdef _MSC_VER
 #if 0
-  asm("sub	esp, %1\n\t"
-      "mov	%0, esp" : "=r"(esp) : "r"(delta));
+  asm("sub        esp, %1\n\t"
+      "mov        %0, esp" : "=r"(esp) : "r"(delta));
 #else
-  asm("mov	eax, DWORD PTR [ebp-8]");  // eax <- delta
-  asm("sub	esp, eax");
-  asm("mov	DWORD PTR [ebp-12], esp");  // esp(variable) <- esp(reg)
+  wa_for_delta(delta);
+  asm("mov        eax, DWORD PTR [ebp-8]");  // eax <- delta
+  asm("sub        esp, eax");
+  asm("mov        DWORD PTR [ebp-12], esp");  // esp(variable) <- esp(reg)
 #endif
 #endif // _MSC_VER
 
@@ -73,99 +78,99 @@ call_Us(union U* r, void* pf, struct S* begin, struct S* end, int nth, enum kind
     switch ( kind ){
     case LD:
       {
-	typedef long double T;
-	*(T*)(esp+offset) = p->m_u.ld;
-	offset += sizeof(T);
+        typedef long double T;
+        *(T*)(esp+offset) = p->m_u.ld;
+        offset += sizeof(T);
       }
       break;
     case DOUBLE:
       {
-	typedef double T;
-	*(T*)(esp+offset) = p->m_u.d;
-	offset += sizeof(T);
+        typedef double T;
+        *(T*)(esp+offset) = p->m_u.d;
+        offset += sizeof(T);
       }
       break;
     case FLOAT:
       {
-	if ( nth <= narg ) {
-	  typedef double T;
-	  *(T*)(esp+offset) = p->m_u.f;
-	  offset += sizeof(T);
-	}
-	else {
-	  typedef float T;
-	  *(T*)(esp+offset) = p->m_u.f;
-	  offset += sizeof(T);
-	}
+        if ( nth <= narg ) {
+          typedef double T;
+          *(T*)(esp+offset) = p->m_u.f;
+          offset += sizeof(T);
+        }
+        else {
+          typedef float T;
+          *(T*)(esp+offset) = p->m_u.f;
+          offset += sizeof(T);
+        }
       }
       break;
     case U64: case S64:
       {
-	typedef uint64_t T;
-	*(T*)(esp+offset) = p->m_u.u64;
-	offset += sizeof(T);
+        typedef uint64_t T;
+        *(T*)(esp+offset) = p->m_u.u64;
+        offset += sizeof(T);
       }
       break;
     case U32: case S32:
       {
-	typedef uint32_t T;
-	*(T*)(esp+offset) = p->m_u.u32;
-	offset += sizeof(T);
+        typedef uint32_t T;
+        *(T*)(esp+offset) = p->m_u.u32;
+        offset += sizeof(T);
       }
       break;
     case U16:
       {
-	typedef uint16_t T;
-	*(T*)(esp+offset) = p->m_u.u16;
-	offset += sizeof(int);
+        typedef uint16_t T;
+        *(T*)(esp+offset) = p->m_u.u16;
+        offset += sizeof(int);
       }
       break;
     case S16:
       {
-	if ( nth <= narg ) {
-	  typedef int T;
-	  *(T*)(esp+offset) = p->m_u.s16;
-	}
-	else {
-	  typedef int16_t T;
-	  *(T*)(esp+offset) = p->m_u.s16;
-	}
-	offset += sizeof(int);
+        if ( nth <= narg ) {
+          typedef int T;
+          *(T*)(esp+offset) = p->m_u.s16;
+        }
+        else {
+          typedef int16_t T;
+          *(T*)(esp+offset) = p->m_u.s16;
+        }
+        offset += sizeof(int);
       }
       break;
     case U8:
       {
-	typedef uint8_t T;
-	*(T*)(esp+offset) = p->m_u.u8;
-	offset += sizeof(int);
+        typedef uint8_t T;
+        *(T*)(esp+offset) = p->m_u.u8;
+        offset += sizeof(int);
       }
       break;
     case S8:
       {
-	if ( nth <= narg ) {
-	  typedef int T;
-	  *(T*)(esp+offset) = p->m_u.s8;
-	}
-	else {
-	  typedef int8_t T;
-	  *(T*)(esp+offset) = p->m_u.s8;
-	}
-	offset += sizeof(int);
+        if ( nth <= narg ) {
+          typedef int T;
+          *(T*)(esp+offset) = p->m_u.s8;
+        }
+        else {
+          typedef int8_t T;
+          *(T*)(esp+offset) = p->m_u.s8;
+        }
+        offset += sizeof(int);
       }
       break;
     case VP:
       {
-	typedef void* T;
-	*(T*)(esp+offset) = p->m_u.vp;
-	offset += sizeof(T);
+        typedef void* T;
+        *(T*)(esp+offset) = p->m_u.vp;
+        offset += sizeof(T);
       }
       break;
     case REC:
       {
-	int size = p->m_size;
-	extern void* memcpy(void*, const void*, uint32_t);
-	memcpy(esp+offset,p->m_u.vp,size);
-	offset += size;
+        int size = p->m_size;
+        extern void* memcpy(void*, const void*, uint32_t);
+        memcpy(esp+offset,p->m_u.vp,size);
+        offset += size;
       }
       break;
     }

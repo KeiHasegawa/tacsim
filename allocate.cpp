@@ -7,67 +7,67 @@
 #include "tacsim.h"
 
 namespace tacsim {
-	using namespace std;
-	using namespace COMPILER;
-	address_table_t g_static;
-	vector<address_table_t> g_stack;
+        using namespace std;
+        using namespace COMPILER;
+        address_table_t g_static;
+        vector<address_table_t> g_stack;
 #ifdef __CYGWIN__
-	vector<address_table_t> g_passed_addr;
+        vector<address_table_t> g_passed_addr;
 #endif // __CYGWIN__
-	namespace allocate {
-		pair<var*, void*> conv(const pair<const fundef*, vector<tac*> >&);
-		void usr1(const pair<string, vector<usr*> >& x);
-		void usr2(usr* u);
-		void constant_(usr* u);
-		bool loc_mode;
-		void set_value(pair<int, var*> x, void* dest);
-		void for_var(var*);
-		bool enter_mode;
+        namespace allocate {
+                pair<var*, void*> conv(const pair<const fundef*, vector<tac*> >&);
+                void usr1(const pair<string, vector<usr*> >& x);
+                void usr2(usr* u);
+                void constant_(usr* u);
+                bool loc_mode;
+                void set_value(pair<int, var*> x, void* dest);
+                void for_var(var*);
+                bool enter_mode;
 #ifdef __CYGWIN__
-		vector<vector<auto_ptr<char> > > copied;
+                vector<vector<auto_ptr<char> > > copied;
 #endif // __CYGWIN__
-	}  // end of namespace allocate
+        }  // end of namespace allocate
 }  // end of namespace tacsim
 
 void tacsim::allocate::register_funcs()
 {
-	using namespace std;
-	using namespace COMPILER;
-	const vector < pair<const fundef*, vector<tac*> > >& funcs = *current_funcs;
-	transform(funcs.begin(),funcs.end(),inserter(g_static, g_static.begin()), conv);
+        using namespace std;
+        using namespace COMPILER;
+        const vector < pair<const fundef*, vector<tac*> > >& funcs = *current_funcs;
+        transform(funcs.begin(),funcs.end(),inserter(g_static, g_static.begin()), conv);
 }
 
 std::pair<COMPILER::var*, void*> tacsim::allocate::conv(const std::pair<const COMPILER::fundef*, std::vector<COMPILER::tac*> >& x)
 {
-	using namespace std;
-	using namespace COMPILER;
-	const fundef* func = x.first;
-	var* v = func->m_usr;
-	return make_pair(v, (void*)v);
+        using namespace std;
+        using namespace COMPILER;
+        const fundef* func = x.first;
+        var* v = func->m_usr;
+        return make_pair(v, (void*)v);
 }
 
 void tacsim::allocate::memory(const COMPILER::scope* ptr)
 {
-	using namespace std;
-	using namespace COMPILER;
-	const map<string, vector<usr*> >& usrs = ptr->m_usrs;
-	for_each(usrs.begin(), usrs.end(), usr1);
-	const vector<scope*>& children = ptr->m_children;
-	for_each(children.begin(), children.end(), memory);
+        using namespace std;
+        using namespace COMPILER;
+        const map<string, vector<usr*> >& usrs = ptr->m_usrs;
+        for_each(usrs.begin(), usrs.end(), usr1);
+        const vector<scope*>& children = ptr->m_children;
+        for_each(children.begin(), children.end(), memory);
 }
 
 void tacsim::allocate::usr1(const std::pair<std::string, std::vector<COMPILER::usr*> >& x)
 {
-	using namespace std;
-	using namespace COMPILER;
-	const vector<usr*>& vec = x.second;
-	for_each(vec.begin(), vec.end(), usr2);
+        using namespace std;
+        using namespace COMPILER;
+        const vector<usr*>& vec = x.second;
+        for_each(vec.begin(), vec.end(), usr2);
 }
 
 namespace tacsim {
-	using namespace std;
-	using namespace COMPILER;
-	bool definition_of(pair<var*, void*> x, string name);
+        using namespace std;
+        using namespace COMPILER;
+        bool definition_of(pair<var*, void*> x, string name);
 } // end of namespace tacsim
 
 // This function is called when
@@ -76,345 +76,345 @@ namespace tacsim {
 // . deallocate non-static memory ( loc_mode && !enter_mode )
 void tacsim::allocate::usr2(COMPILER::usr* u)
 {
-	using namespace std;
-	using namespace COMPILER;
+        using namespace std;
+        using namespace COMPILER;
 
-	usr::flag flag = u->m_flag;
+        usr::flag flag = u->m_flag;
 
-	if (flag & usr::TYPEDEF)
-		return;
+        if (flag & usr::TYPEDEF)
+                return;
 
-	usr::flag mask = usr::flag(usr::EXTERN | usr::FUNCTION);
-	if (flag & mask){
-		if (loc_mode) {
-			if (enter_mode)
-				g_static[u] = 0;
-			else {
-				if (!is_external_declaration(u))
-					g_static.erase(u);
-			}
-		}
-		return;
-	}
+        usr::flag mask = usr::flag(usr::EXTERN | usr::FUNCTION);
+        if (flag & mask){
+                if (loc_mode) {
+                        if (enter_mode)
+                                g_static[u] = 0;
+                        else {
+                                if (!is_external_declaration(u))
+                                        g_static.erase(u);
+                        }
+                }
+                return;
+        }
 
-	if (flag & usr::STATIC) {
-		if (loc_mode)
-			return;
-		int size = u->m_type->size();
-		assert(size);
-		void* p = g_static[u] = new char[size];
-		memset(p, 0, size);
-	}
+        if (flag & usr::STATIC) {
+                if (loc_mode)
+                        return;
+                int size = u->m_type->size();
+                assert(size);
+                void* p = g_static[u] = new char[size];
+                memset(p, 0, size);
+        }
 
-	if (flag & usr::WITH_INI) {
-		if (loc_mode)
-			return;
-		with_initial* wi = static_cast<with_initial*>(u);
-		map<int, var*>& value = wi->m_value;
-		if (!g_static[u]) {
-			int size = u->m_type->size();
-			assert(size);
-			memset(g_static[u] = new char[size], 0, size);
-		}
-		for_each(value.begin(), value.end(), bind2nd(ptr_fun(set_value),g_static[u]));
-		return;
-	}
+        if (flag & usr::WITH_INI) {
+                if (loc_mode)
+                        return;
+                with_initial* wi = static_cast<with_initial*>(u);
+                map<int, var*>& value = wi->m_value;
+                if (!g_static[u]) {
+                        int size = u->m_type->size();
+                        assert(size);
+                        memset(g_static[u] = new char[size], 0, size);
+                }
+                for_each(value.begin(), value.end(), bind2nd(ptr_fun(set_value),g_static[u]));
+                return;
+        }
 
-	if (flag & usr::STATIC)
-		return;
+        if (flag & usr::STATIC)
+                return;
 
-	if (u->isconstant())
-		return constant_(u);
+        if (u->isconstant())
+                return constant_(u);
 
-	if (is_external_declaration(u)) {
-		if (loc_mode)
-			return;
-		string name = u->m_name;
-		address_table_t::const_iterator p =
-		  find_if(g_static.begin(), g_static.end(), bind2nd(ptr_fun(definition_of), name));
-		if (p != g_static.end())
-			return;
-		int size = u->m_type->size();
-		assert(size);
-		memset(g_static[u] = new char[size], 0, size);
-		return;
-	}
+        if (is_external_declaration(u)) {
+                if (loc_mode)
+                        return;
+                string name = u->m_name;
+                address_table_t::const_iterator p =
+                  find_if(g_static.begin(), g_static.end(), bind2nd(ptr_fun(definition_of), name));
+                if (p != g_static.end())
+                        return;
+                int size = u->m_type->size();
+                assert(size);
+                memset(g_static[u] = new char[size], 0, size);
+                return;
+        }
 
-	if (loc_mode)
-		for_var(u);
+        if (loc_mode)
+                for_var(u);
 }
 
 void tacsim::allocate::constant_(COMPILER::usr* u)
 {
-	using namespace std;
-	using namespace COMPILER;
+        using namespace std;
+        using namespace COMPILER;
 
-	usr::flag flag = u->m_flag;
-	if (loc_mode)
-		return;
+        usr::flag flag = u->m_flag;
+        if (loc_mode)
+                return;
 
-	const type* T = u->m_type;
-	int size = T->size();
-	void* p = g_static[u] = new char[size];
-	if (T->real()) {
-		if (size == sizeof(float)) {
-			typedef float T;
-			constant<T>* c = static_cast<constant<T>*>(u);
-			*(T*)p = c->m_value;
-		}
-		else if (size == sizeof(double)) {
-			typedef double T;
-			constant<T>* c = static_cast<constant<T>*>(u);
-			*(T*)p = c->m_value;
-		}
-		else {
-			typedef long double T;
-			assert(size == sizeof(T));
-			constant<T>* c = static_cast<constant<T>*>(u);
-			*(T*)p = c->m_value;
-		}
-	}
-	else if (T->integer()) {
-		if (size == sizeof(char)) {
-			typedef char T;
-			constant<T>* c = static_cast<constant<T>*>(u);
-			*(T*)p = c->m_value;
-		}
-		else if (size == sizeof(short)) {
-			typedef short T;
-			constant<T>* c = static_cast<constant<T>*>(u);
-			*(T*)p = c->m_value;
-		}
-		else if (size == sizeof(int)) {
-			typedef int T;
-			constant<T>* c = static_cast<constant<T>*>(u);
-			*(T*)p = c->m_value;
-		}
-		else if (size == sizeof(long)) {
-			typedef long T;
-			constant<T>* c = static_cast<constant<T>*>(u);
-			*(T*)p = c->m_value;
-		}
-		else {
-			typedef long long T;
-			assert(size == sizeof(T));
-			constant<T>* c = static_cast<constant<T>*>(u);
-			*(T*)p = c->m_value;
-		}
-	}
-	else {
-		assert(flag & usr::CONST_PTR);
-		typedef void* T;
-		constant<T>* c = static_cast<constant<T>*>(u);
-		*(T*)p = c->m_value;
-	}
+        const type* T = u->m_type;
+        int size = T->size();
+        void* p = g_static[u] = new char[size];
+        if (T->real()) {
+                if (size == sizeof(float)) {
+                        typedef float T;
+                        constant<T>* c = static_cast<constant<T>*>(u);
+                        *(T*)p = c->m_value;
+                }
+                else if (size == sizeof(double)) {
+                        typedef double T;
+                        constant<T>* c = static_cast<constant<T>*>(u);
+                        *(T*)p = c->m_value;
+                }
+                else {
+                        typedef long double T;
+                        assert(size == sizeof(T));
+                        constant<T>* c = static_cast<constant<T>*>(u);
+                        *(T*)p = c->m_value;
+                }
+        }
+        else if (T->integer()) {
+                if (size == sizeof(char)) {
+                        typedef char T;
+                        constant<T>* c = static_cast<constant<T>*>(u);
+                        *(T*)p = c->m_value;
+                }
+                else if (size == sizeof(short)) {
+                        typedef short T;
+                        constant<T>* c = static_cast<constant<T>*>(u);
+                        *(T*)p = c->m_value;
+                }
+                else if (size == sizeof(int)) {
+                        typedef int T;
+                        constant<T>* c = static_cast<constant<T>*>(u);
+                        *(T*)p = c->m_value;
+                }
+                else if (size == sizeof(long)) {
+                        typedef long T;
+                        constant<T>* c = static_cast<constant<T>*>(u);
+                        *(T*)p = c->m_value;
+                }
+                else {
+                        typedef long long T;
+                        assert(size == sizeof(T));
+                        constant<T>* c = static_cast<constant<T>*>(u);
+                        *(T*)p = c->m_value;
+                }
+        }
+        else {
+                assert(flag & usr::CONST_PTR);
+                typedef void* T;
+                constant<T>* c = static_cast<constant<T>*>(u);
+                *(T*)p = c->m_value;
+        }
 }
 
 namespace tacsim {
-	namespace allocate {
-		using namespace std;
-		using namespace COMPILER;
-		template<class T> void set_value2(void* dest, int offset, constant<T>* c)
-		{
-			char* pc = static_cast<char*>(dest) + offset;
-			T* ptr = reinterpret_cast<T*>(pc);
-			*ptr = c->m_value;
-		}
-	}
+        namespace allocate {
+                using namespace std;
+                using namespace COMPILER;
+                template<class T> void set_value2(void* dest, int offset, constant<T>* c)
+                {
+                        char* pc = static_cast<char*>(dest) + offset;
+                        T* ptr = reinterpret_cast<T*>(pc);
+                        *ptr = c->m_value;
+                }
+        }
 }  // end of namespace allocate, tacsim
 
 void tacsim::allocate::set_value(std::pair<int, COMPILER::var*> x, void* dest)
 {
-	using namespace std;
-	using namespace COMPILER;
+        using namespace std;
+        using namespace COMPILER;
 
-	int offset = x.first;
-	var* v = x.second;
-	if (usr* u = v->usr_cast()) {
-		assert(u->isconstant());
-		const type* T = u->m_type;
-		int size = T->size();
-		if (T->real()) {
-			if (size == sizeof(float))
-				set_value2(dest, offset, static_cast<constant<float>*>(u));
-			else if (size == sizeof(double))
-				set_value2(dest, offset, static_cast<constant<double>*>(u));
-			else {
-				assert(size == sizeof(long double));
-				set_value2(dest, offset, static_cast<constant<long double>*>(u));
-			}
-		}
-		else if (T->integer()) {
-			if (size == sizeof(char))
-				set_value2(dest, offset, static_cast<constant<char>*>(u));
-			else if (size == sizeof(short int))
-				set_value2(dest, offset, static_cast<constant<short int>*>(u));
-			else if (size == sizeof(int))
-				set_value2(dest, offset, static_cast<constant<int>*>(u));
-			else if (size == sizeof(long int))
-				set_value2(dest, offset, static_cast<constant<long int>*>(u));
-			else {
-				assert(size == sizeof(long long int));
-				set_value2(dest, offset, static_cast<constant<long long int>*>(u));
-			}
-		}
-		else {
-			assert(u->m_flag & usr::CONST_PTR);
-			set_value2(dest, offset, static_cast<constant<void*>*>(u));
-		}
-	}
-	else {
-		addrof* addr = v->addrof_cast();
-		assert(addr);
-		dest = (char*)dest + offset;
-		after_addrof.push_back(make_pair(dest, addr));
-	}
+        int offset = x.first;
+        var* v = x.second;
+        if (usr* u = v->usr_cast()) {
+                assert(u->isconstant());
+                const type* T = u->m_type;
+                int size = T->size();
+                if (T->real()) {
+                        if (size == sizeof(float))
+                                set_value2(dest, offset, static_cast<constant<float>*>(u));
+                        else if (size == sizeof(double))
+                                set_value2(dest, offset, static_cast<constant<double>*>(u));
+                        else {
+                                assert(size == sizeof(long double));
+                                set_value2(dest, offset, static_cast<constant<long double>*>(u));
+                        }
+                }
+                else if (T->integer()) {
+                        if (size == sizeof(char))
+                                set_value2(dest, offset, static_cast<constant<char>*>(u));
+                        else if (size == sizeof(short int))
+                                set_value2(dest, offset, static_cast<constant<short int>*>(u));
+                        else if (size == sizeof(int))
+                                set_value2(dest, offset, static_cast<constant<int>*>(u));
+                        else if (size == sizeof(long int))
+                                set_value2(dest, offset, static_cast<constant<long int>*>(u));
+                        else {
+                                assert(size == sizeof(long long int));
+                                set_value2(dest, offset, static_cast<constant<long long int>*>(u));
+                        }
+                }
+                else {
+                        assert(u->m_flag & usr::CONST_PTR);
+                        set_value2(dest, offset, static_cast<constant<void*>*>(u));
+                }
+        }
+        else {
+                addrof* addr = v->addrof_cast();
+                assert(addr);
+                dest = (char*)dest + offset;
+                after_addrof.push_back(make_pair(dest, addr));
+        }
 }
 
 void tacsim::allocate::for_var(COMPILER::var* v)
 {
-	using namespace std;
-	using namespace COMPILER;
+        using namespace std;
+        using namespace COMPILER;
 
-	if (enter_mode) {
-		const type* T = v->m_type;
-		int size = T->size();
-		address_table_t& curr = g_stack.back();
-		memset(curr[v] = new char[size], 0xcc, size);
-	}
-	else {
-		address_table_t& curr = g_stack.back();
-		address_table_t::iterator p = curr.find(v);
-		if (p != curr.end()) {
-			delete[] p->second;
-			curr.erase(p);
-		}
-	}
+        if (enter_mode) {
+                const type* T = v->m_type;
+                int size = T->size();
+                address_table_t& curr = g_stack.back();
+                memset(curr[v] = new char[size], 0xcc, size);
+        }
+        else {
+                address_table_t& curr = g_stack.back();
+                address_table_t::iterator p = curr.find(v);
+                if (p != curr.end()) {
+                        delete[] p->second;
+                        curr.erase(p);
+                }
+        }
 }
 
 std::vector<std::pair<void*, COMPILER::addrof*> > tacsim::allocate::after_addrof;
 
 void tacsim::allocate::set_addrof(const std::pair<void*, COMPILER::addrof*>& x)
 {
-	using namespace std;
-	using namespace COMPILER;
-	void* ptr = x.first;
-	void** dest = (void**)ptr;
-	addrof* addr = x.second;
-	var* v = addr->m_ref;
-	int offset = addr->m_offset;
-	*dest = (void*)((char*)getaddr(v)+offset);
+        using namespace std;
+        using namespace COMPILER;
+        void* ptr = x.first;
+        void** dest = (void**)ptr;
+        addrof* addr = x.second;
+        var* v = addr->m_ref;
+        int offset = addr->m_offset;
+        *dest = (void*)((char*)getaddr(v)+offset);
 }
 
 void* tacsim::getaddr(COMPILER::var* v, bool prev) throw (not_found)
 {
-	using namespace std;
-	using namespace COMPILER;
-	int size = g_stack.size();
-	assert(!prev || size >= 2);
-	if (!g_stack.empty()){
-		const address_table_t& ref = g_stack[prev ? size-2 : size-1];
-		address_table_t::const_iterator p = ref.find(v);
-		if (p != ref.end())
-			return p->second;
-	}
+        using namespace std;
+        using namespace COMPILER;
+        int size = g_stack.size();
+        assert(!prev || size >= 2);
+        if (!g_stack.empty()){
+                const address_table_t& ref = g_stack[prev ? size-2 : size-1];
+                address_table_t::const_iterator p = ref.find(v);
+                if (p != ref.end())
+                        return p->second;
+        }
 
-	address_table_t::const_iterator p = g_static.find(v);
-	if (p != g_static.end()) {
-		if (void* r = p->second)
-			return r;
-	}
-	usr* u = v->usr_cast();
-	assert(u);
-	string name = u->m_name;
-	p = find_if(g_static.begin(), g_static.end(), bind2nd(ptr_fun(definition_of), name));
-	if (p != g_static.end()) {
-		assert(p->second);
-		return p->second;
-	}
+        address_table_t::const_iterator p = g_static.find(v);
+        if (p != g_static.end()) {
+                if (void* r = p->second)
+                        return r;
+        }
+        usr* u = v->usr_cast();
+        assert(u);
+        string name = u->m_name;
+        p = find_if(g_static.begin(), g_static.end(), bind2nd(ptr_fun(definition_of), name));
+        if (p != g_static.end()) {
+                assert(p->second);
+                return p->second;
+        }
 
-	map<string, void*>::const_iterator q = external::table.find(name);
-	if (q != external::table.end())
-		return q->second;
-	throw not_found(u);
+        map<string, void*>::const_iterator q = external::table.find(name);
+        if (q != external::table.end())
+                return q->second;
+        throw not_found(u);
 }
 
 bool tacsim::definition_of(std::pair<COMPILER::var*, void*> x, std::string name)
 {
-	using namespace std;
-	using namespace COMPILER;
-	var* v = x.first;
-	usr* u = v->usr_cast();
-	if (!u)
-		return false;
-	if (u->m_name != name)
-		return false;
-	if (!is_external_declaration(u))
-		return false;
-	usr::flag flag = u->m_flag;
-	if (flag & usr::EXTERN)
-		return false;
-	return true;
+        using namespace std;
+        using namespace COMPILER;
+        var* v = x.first;
+        usr* u = v->usr_cast();
+        if (!u)
+                return false;
+        if (u->m_name != name)
+                return false;
+        if (!is_external_declaration(u))
+                return false;
+        usr::flag flag = u->m_flag;
+        if (flag & usr::EXTERN)
+                return false;
+        return true;
 }
 
 namespace tacsim {
-	using namespace std;
-	using namespace COMPILER;
-	namespace allocate {
-		int add_size(int offset, const pair<void*, const type*>& x);
-		char* save_param(char* p, const pair<void*, const type*>& x);
-		char* decide_address(char* p, usr* u);
-		void loc_var(scope*);
-		stack<void*> param_area;
-	}  // end of namespace allocate
+        using namespace std;
+        using namespace COMPILER;
+        namespace allocate {
+                int add_size(int offset, const pair<void*, const type*>& x);
+                char* save_param(char* p, const pair<void*, const type*>& x);
+                char* decide_address(char* p, usr* u);
+                void loc_var(scope*);
+                stack<void*> param_area;
+        }  // end of namespace allocate
 }  // end of namespace tacsim
 
 void tacsim::allocate::entrance(const COMPILER::param_scope* ptr)
 {
-	using namespace std;
-	using namespace COMPILER;
+        using namespace std;
+        using namespace COMPILER;
 
-	g_stack.push_back(address_table_t());
+        g_stack.push_back(address_table_t());
 #ifdef __CYGWIN__
-	g_passed_addr.push_back(address_table_t());
-	copied.push_back(vector<auto_ptr<char> >());
+        g_passed_addr.push_back(address_table_t());
+        copied.push_back(vector<auto_ptr<char> >());
 #endif // __CYGWIN__
-	int n = accumulate(parameters.begin(), parameters.end(), 0, add_size);
-	char* p = n ? new char[n+16] : 0;
-	param_area.push(p);
-	accumulate(parameters.begin(), parameters.end(), p, save_param);
-	const vector<usr*>& order = ptr->m_order;
-	accumulate(order.begin(), order.end(), p, decide_address);
-	for_each(parameters.begin(), parameters.end(), destroy<void*, const type*>()); parameters.clear();
+        int n = accumulate(parameters.begin(), parameters.end(), 0, add_size);
+        char* p = n ? new char[n+16] : 0;
+        param_area.push(p);
+        accumulate(parameters.begin(), parameters.end(), p, save_param);
+        const vector<usr*>& order = ptr->m_order;
+        accumulate(order.begin(), order.end(), p, decide_address);
+        for_each(parameters.begin(), parameters.end(), destroy<void*, const type*>()); parameters.clear();
 
-	loc_mode = true;
-	enter_mode = true;
-	const vector<scope*>& children = ptr->m_children;
-	for_each(children.begin(), children.end(), loc_var);
+        loc_mode = true;
+        enter_mode = true;
+        const vector<scope*>& children = ptr->m_children;
+        for_each(children.begin(), children.end(), loc_var);
 }
 
 int tacsim::allocate::add_size(int offset, const std::pair<void*, const COMPILER::type*>& x)
 {
-	using namespace std;
-	using namespace COMPILER;
-	const type* T = x.second;
-	T = T->promotion();
+        using namespace std;
+        using namespace COMPILER;
+        const type* T = x.second;
+        T = T->promotion();
 
-	// Workaround for calling function which takes va_list
-	// and bellow just works in intel partially.
-	// This is not complete even if limited intel.
-	if (sizeof(void*) == 8) {
+        // Workaround for calling function which takes va_list
+        // and bellow just works in intel partially.
+        // This is not complete even if limited intel.
+        if (sizeof(void*) == 8) {
 #ifdef __CYGWIN__
-	  if (T->real() && T->size() == sizeof(long double)) {
-	    offset = tacsim::align(offset, 8);
-	    return offset + 8;
-	  }
-#endif // __CYGWIN__	  
-	  int al = T->align();
-	  al = max(al, 8);
-	  offset = tacsim::align(offset, al);
-	}
-	return offset + T->size();
+          if (T->real() && T->size() == sizeof(long double)) {
+            offset = tacsim::align(offset, 8);
+            return offset + 8;
+          }
+#endif // __CYGWIN__          
+          int al = T->align();
+          al = max(al, 8);
+          offset = tacsim::align(offset, al);
+        }
+        return offset + T->size();
 }
 
 #ifdef __CYGWIN__
@@ -448,80 +448,80 @@ namespace tacsim {
 
 char* tacsim::allocate::save_param(char* p, const std::pair<void*, const COMPILER::type*>& x)
 {
-	using namespace COMPILER;
-	void* src = x.first;
-	const type* T = x.second;
-	T = T->promotion();
+        using namespace COMPILER;
+        void* src = x.first;
+        const type* T = x.second;
+        T = T->promotion();
 
-	// Workaround for calling function which takes va_list.
-	// See also add_size comment.
-	if (sizeof(void*) == 8) {
+        // Workaround for calling function which takes va_list.
+        // See also add_size comment.
+        if (sizeof(void*) == 8) {
 #ifdef __CYGWIN__
-	  if (T->real() && T->size() == sizeof(long double))
-	    return create_copy_pass_addr(p, src, T);
+          if (T->real() && T->size() == sizeof(long double))
+            return create_copy_pass_addr(p, src, T);
 #endif // __CYGWIN__
-	  int al = T->align();
-	  al = max(al, 8);
-	  p = (char*)tacsim::align((uint64_t)p, al);
-	}
+          int al = T->align();
+          al = max(al, 8);
+          p = (char*)tacsim::align((uint64_t)p, al);
+        }
 
-	memcpy(p, src, T->size());
-	return p + T->size();
+        memcpy(p, src, T->size());
+        return p + T->size();
 }
 
 char* tacsim::allocate::decide_address(char* p, COMPILER::usr* u)
 {
-	using namespace COMPILER;
-	const type* T = u->m_type;
-	T = T->promotion();
+        using namespace COMPILER;
+        const type* T = u->m_type;
+        T = T->promotion();
 
-	// Workaroudn for calling function which takes va_list.
-	// See also add_size and save_param comment.
-	if (sizeof(void*) == 8) {
+        // Workaroudn for calling function which takes va_list.
+        // See also add_size and save_param comment.
+        if (sizeof(void*) == 8) {
 #ifdef __CYGWIN__
-	  if (T->real() && T->size() == sizeof(long double))
-	    return decide_addr_created_copy(p, u);
-#endif // __CYGWIN__	  
-	  int al = T->align();
-	  al = max(al, 8);
-	  p = (char*)tacsim::align((uint64_t)p, al);
-	}
-	
-	address_table_t& curr = g_stack.back();
-	curr[u] = p;
-	return p + T->size();
+          if (T->real() && T->size() == sizeof(long double))
+            return decide_addr_created_copy(p, u);
+#endif // __CYGWIN__          
+          int al = T->align();
+          al = max(al, 8);
+          p = (char*)tacsim::align((uint64_t)p, al);
+        }
+        
+        address_table_t& curr = g_stack.back();
+        curr[u] = p;
+        return p + T->size();
 }
 
 void tacsim::allocate::loc_var(COMPILER::scope* ptr)
 {
-	using namespace std;
-	using namespace COMPILER;
-	
-	assert(ptr->m_id == scope::BLOCK);
-	block* b = static_cast<block*>(ptr);
-	const map<string, vector<usr*> >& usrs = b->m_usrs;
-	for_each(usrs.begin(), usrs.end(), usr1);
-	const vector<var*>& vars = b->m_vars;
-	for_each(vars.begin(), vars.end(), for_var);
-	const vector<scope*>& children = b->m_children;
-	for_each(children.begin(), children.end(), loc_var);
+        using namespace std;
+        using namespace COMPILER;
+        
+        assert(ptr->m_id == scope::BLOCK);
+        block* b = static_cast<block*>(ptr);
+        const map<string, vector<usr*> >& usrs = b->m_usrs;
+        for_each(usrs.begin(), usrs.end(), usr1);
+        const vector<var*>& vars = b->m_vars;
+        for_each(vars.begin(), vars.end(), for_var);
+        const vector<scope*>& children = b->m_children;
+        for_each(children.begin(), children.end(), loc_var);
 }
 
 void tacsim::allocate::exit(const COMPILER::param_scope* ptr)
 {
-	using namespace std;
-	using namespace COMPILER;
+        using namespace std;
+        using namespace COMPILER;
 
-	void* p = param_area.top();
-	delete[] p;
-	param_area.pop();
+        void* p = param_area.top();
+        delete[] p;
+        param_area.pop();
 
-	enter_mode = false;
-	const vector<scope*>& children = ptr->m_children;
-	for_each(children.begin(), children.end(), loc_var);
-	g_stack.pop_back();
+        enter_mode = false;
+        const vector<scope*>& children = ptr->m_children;
+        for_each(children.begin(), children.end(), loc_var);
+        g_stack.pop_back();
 #ifdef __CYGWIN__
-	g_passed_addr.pop_back();
-	copied.pop_back();
+        g_passed_addr.pop_back();
+        copied.pop_back();
 #endif // __CYGWIN__
 }

@@ -10,3 +10,5 @@ rm -f x64/Debug/call_Us.x64.vs.obj
 /cygdrive/d/Program\ Files\ \(x86\)/Microsoft\ Visual\ Studio/2017/WDExpress/VC/Tools/MSVC/14.12.25827/bin/HostX86/x86/CL.exe /E call_Us.x86.gxx.cpp |\
 sed -e 's/extern "C" void/void/' > call_Us.x86.vs.i
 hcc1.exe call_Us.x86.vs.i --simple-medium --generator-option \( --debug --ms --x86 \) -o call_Us.x86.vs.asm
+
+rm -f Debug/call_Us.x86.vs.obj
