@@ -5,7 +5,7 @@ _add_size	PROC
 	push 	ebp
 	push	ebx
 	mov 	ebp, esp
-	sub 	esp, 36
+	sub 	esp, 32
 	; t0 := p + 12
 	mov 	eax, DWORD PTR [ebp+16]
 	add 	eax, 12
@@ -33,7 +33,7 @@ _wa_for_delta	PROC
 	push 	ebp
 	push	ebx
 	mov 	ebp, esp
-	sub 	esp, 20
+	sub 	esp, 16
 	; t3 := n + 3
 	mov 	eax, DWORD PTR [ebp+12]
 	add 	eax, 3
@@ -54,7 +54,7 @@ _call_Us	PROC
 	push 	ebp
 	push	ebx
 	mov 	ebp, esp
-	sub 	esp, 468
+	sub 	esp, 464
 	; rvp := *r
 	mov 	eax, DWORD PTR [ebp+12]
 	mov	eax, [eax]
@@ -62,19 +62,19 @@ _call_Us	PROC
 	; if rvp == .pointer16 goto label0
 	mov 	eax, DWORD PTR [ebp-28]
 	cmp	eax, 0
-	je	_call_Us00240460$
+	je	_call_Us000001F07B3FBDC0$
 	; t4 := 4
 	mov	eax, 4
 	mov 	DWORD PTR [ebp-32], eax
 	; goto label1
-	jmp	_call_Us002404D0$
+	jmp	_call_Us000001F07B3FD140$
 	; label0:
-_call_Us00240460$:
+_call_Us000001F07B3FBDC0$:
 	; t4 := 0
 	mov	eax, 0
 	mov 	DWORD PTR [ebp-32], eax
 	; label1:
-_call_Us002404D0$:
+_call_Us000001F07B3FD140$:
 	; offset := t4
 	mov 	eax, DWORD PTR [ebp-32]
 	mov 	DWORD PTR [ebp-24], eax
@@ -91,11 +91,11 @@ _call_Us002404D0$:
 	lea 	ebx, _add_size
 	mov 	DWORD PTR [ebp-52], ebx
 	; label2:
-_call_Us00241548$:
+_call_Us000001F07B3FCB40$:
 	; if p == end goto label3
 	mov 	eax, DWORD PTR [ebp-60]
 	cmp	eax, DWORD PTR [ebp-44]
-	je	_call_Us002415B8$
+	je	_call_Us000001F07B3FB940$
 	; param n
 	mov 	eax, DWORD PTR [ebp-48]
 	mov	DWORD PTR 0[esp], eax
@@ -114,16 +114,16 @@ _call_Us00241548$:
 	add 	eax, 16
 	mov 	DWORD PTR [ebp-60], eax
 	; goto label2
-	jmp	_call_Us00241548$
+	jmp	_call_Us000001F07B3FCB40$
 	; label3:
-_call_Us002415B8$:
+_call_Us000001F07B3FB940$:
 	; t6 := n
 	mov 	eax, DWORD PTR [ebp-48]
 	mov 	DWORD PTR [ebp-56], eax
 	; goto label4
-	jmp	_call_Us00241628$
+	jmp	_call_Us000001F07B3FC300$
 	; label4:
-_call_Us00241628$:
+_call_Us000001F07B3FC300$:
 	; delta := t6
 	mov 	eax, DWORD PTR [ebp-56]
 	mov 	DWORD PTR [ebp-8], eax
@@ -134,7 +134,7 @@ _call_Us00241628$:
 	; if n == 0 goto label5
 	mov 	eax, DWORD PTR [ebp-16]
 	cmp	eax, 0
-	je	_call_Us00242DF0$
+	je	_call_Us000001F07B3FC9C0$
 	; t7 := 16 - n
 	mov	eax, 16
 	sub 	eax, DWORD PTR [ebp-16]
@@ -144,22 +144,22 @@ _call_Us00241628$:
 	add 	eax, DWORD PTR [ebp-36]
 	mov 	DWORD PTR [ebp-8], eax
 	; label5:
-_call_Us00242DF0$:
+_call_Us000001F07B3FC9C0$:
 	; param delta
 	mov 	eax, DWORD PTR [ebp-8]
 	mov	DWORD PTR 0[esp], eax
 	; call wa_for_delta
 	call	_wa_for_delta
-	; asm "mov	eax, DWORD PTR [ebp-8]"
-	mov	eax, DWORD PTR [ebp-8]
-	; asm "sub	esp, eax"
-	sub	esp, eax
-	; asm "mov	DWORD PTR [ebp-12], esp"
-	mov	DWORD PTR [ebp-12], esp
+	; asm "mov        eax, DWORD PTR [ebp-8]"
+	mov        eax, DWORD PTR [ebp-8]
+	; asm "sub        esp, eax"
+	sub        esp, eax
+	; asm "mov        DWORD PTR [ebp-12], esp"
+	mov        DWORD PTR [ebp-12], esp
 	; if rvp == .pointer16 goto label6
 	mov 	eax, DWORD PTR [ebp-28]
 	cmp	eax, 0
-	je	_call_Us00242B50$
+	je	_call_Us000001F07B410AF0$
 	; t8 := (void **)esp
 	mov 	eax, DWORD PTR [ebp-12]
 	mov 	DWORD PTR [ebp-40], eax
@@ -168,7 +168,7 @@ _call_Us00242DF0$:
 	mov 	eax, DWORD PTR [ebp-28]
 	mov	[ecx], eax
 	; label6:
-_call_Us00242B50$:
+_call_Us000001F07B410AF0$:
 	; narg := 0
 	mov	eax, 0
 	mov 	DWORD PTR [ebp-20], eax
@@ -176,11 +176,11 @@ _call_Us00242B50$:
 	mov 	eax, DWORD PTR [ebp+20]
 	mov 	DWORD PTR [ebp-68], eax
 	; label7:
-_call_Us00242A70$:
+_call_Us000001F07B40F230$:
 	; if p == end goto label8
 	mov 	eax, DWORD PTR [ebp-68]
 	cmp	eax, DWORD PTR [ebp+24]
-	je	_call_Us00242BC0$
+	je	_call_Us000001F07B40F770$
 	; t9 := p + 8
 	mov 	eax, DWORD PTR [ebp-68]
 	add 	eax, 8
@@ -190,9 +190,9 @@ _call_Us00242A70$:
 	mov	eax, [eax]
 	mov 	DWORD PTR [ebp-72], eax
 	; goto label9
-	jmp	_call_Us0025B790$
+	jmp	_call_Us000001F07B42B880$
 	; label10:
-_call_Us00242840$:
+_call_Us000001F07B410D30$:
 	; t10 := esp + offset
 	mov 	eax, DWORD PTR [ebp-12]
 	add 	eax, DWORD PTR [ebp-24]
@@ -213,7 +213,7 @@ _call_Us00242840$:
 	; t13 := (unsigned int)offset
 	mov 	eax, DWORD PTR [ebp-24]
 	mov 	DWORD PTR [ebp-100], eax
-	; t14 := t13 + .integer43
+	; t14 := t13 + .integer42
 	mov 	eax, DWORD PTR [ebp-100]
 	add 	eax, 8
 	mov 	DWORD PTR [ebp-104], eax
@@ -221,9 +221,9 @@ _call_Us00242840$:
 	mov 	eax, DWORD PTR [ebp-104]
 	mov 	DWORD PTR [ebp-24], eax
 	; goto label11
-	jmp	_call_Us0025AE60$
+	jmp	_call_Us000001F07B42A5C0$
 	; label12:
-_call_Us002428B0$:
+_call_Us000001F07B4104F0$:
 	; t15 := esp + offset
 	mov 	eax, DWORD PTR [ebp-12]
 	add 	eax, DWORD PTR [ebp-24]
@@ -244,7 +244,7 @@ _call_Us002428B0$:
 	; t18 := (unsigned int)offset
 	mov 	eax, DWORD PTR [ebp-24]
 	mov 	DWORD PTR [ebp-124], eax
-	; t19 := t18 + .integer43
+	; t19 := t18 + .integer42
 	mov 	eax, DWORD PTR [ebp-124]
 	add 	eax, 8
 	mov 	DWORD PTR [ebp-128], eax
@@ -252,13 +252,13 @@ _call_Us002428B0$:
 	mov 	eax, DWORD PTR [ebp-128]
 	mov 	DWORD PTR [ebp-24], eax
 	; goto label11
-	jmp	_call_Us0025AE60$
+	jmp	_call_Us000001F07B42A5C0$
 	; label13:
-_call_Us00242AE0$:
+_call_Us000001F07B40FBF0$:
 	; if nth > narg goto label14
 	mov 	eax, DWORD PTR [ebp+28]
 	cmp	eax, DWORD PTR [ebp-20]
-	jg	_call_Us00242E60$
+	jg	_call_Us000001F07B4101F0$
 	; t20 := esp + offset
 	mov 	eax, DWORD PTR [ebp-12]
 	add 	eax, DWORD PTR [ebp-24]
@@ -282,7 +282,7 @@ _call_Us00242AE0$:
 	; t24 := (unsigned int)offset
 	mov 	eax, DWORD PTR [ebp-24]
 	mov 	DWORD PTR [ebp-156], eax
-	; t25 := t24 + .integer43
+	; t25 := t24 + .integer42
 	mov 	eax, DWORD PTR [ebp-156]
 	add 	eax, 8
 	mov 	DWORD PTR [ebp-160], eax
@@ -290,9 +290,9 @@ _call_Us00242AE0$:
 	mov 	eax, DWORD PTR [ebp-160]
 	mov 	DWORD PTR [ebp-24], eax
 	; goto label15
-	jmp	_call_Us00242990$
+	jmp	_call_Us000001F07B40FA70$
 	; label14:
-_call_Us00242E60$:
+_call_Us000001F07B4101F0$:
 	; t26 := esp + offset
 	mov 	eax, DWORD PTR [ebp-12]
 	add 	eax, DWORD PTR [ebp-24]
@@ -311,7 +311,7 @@ _call_Us00242E60$:
 	; t29 := (unsigned int)offset
 	mov 	eax, DWORD PTR [ebp-24]
 	mov 	DWORD PTR [ebp-176], eax
-	; t30 := t29 + .integer44
+	; t30 := t29 + .integer43
 	mov 	eax, DWORD PTR [ebp-176]
 	add 	eax, 4
 	mov 	DWORD PTR [ebp-180], eax
@@ -319,13 +319,13 @@ _call_Us00242E60$:
 	mov 	eax, DWORD PTR [ebp-180]
 	mov 	DWORD PTR [ebp-24], eax
 	; label15:
-_call_Us00242990$:
+_call_Us000001F07B40FA70$:
 	; goto label11
-	jmp	_call_Us0025AE60$
+	jmp	_call_Us000001F07B42A5C0$
 	; label16:
-_call_Us00242D10$:
+_call_Us000001F07B4107F0$:
 	; label17:
-_call_Us00242A00$:
+_call_Us000001F07B40FD70$:
 	; t31 := esp + offset
 	mov 	eax, DWORD PTR [ebp-12]
 	add 	eax, DWORD PTR [ebp-24]
@@ -348,7 +348,7 @@ _call_Us00242A00$:
 	; t34 := (unsigned int)offset
 	mov 	eax, DWORD PTR [ebp-24]
 	mov 	DWORD PTR [ebp-204], eax
-	; t35 := t34 + .integer43
+	; t35 := t34 + .integer42
 	mov 	eax, DWORD PTR [ebp-204]
 	add 	eax, 8
 	mov 	DWORD PTR [ebp-208], eax
@@ -356,11 +356,11 @@ _call_Us00242A00$:
 	mov 	eax, DWORD PTR [ebp-208]
 	mov 	DWORD PTR [ebp-24], eax
 	; goto label11
-	jmp	_call_Us0025AE60$
+	jmp	_call_Us000001F07B42A5C0$
 	; label18:
-_call_Us00242C30$:
+_call_Us000001F07B410730$:
 	; label19:
-_call_Us00242CA0$:
+_call_Us000001F07B410BB0$:
 	; t36 := esp + offset
 	mov 	eax, DWORD PTR [ebp-12]
 	add 	eax, DWORD PTR [ebp-24]
@@ -379,7 +379,7 @@ _call_Us00242CA0$:
 	; t39 := (unsigned int)offset
 	mov 	eax, DWORD PTR [ebp-24]
 	mov 	DWORD PTR [ebp-224], eax
-	; t40 := t39 + .integer44
+	; t40 := t39 + .integer43
 	mov 	eax, DWORD PTR [ebp-224]
 	add 	eax, 4
 	mov 	DWORD PTR [ebp-228], eax
@@ -387,9 +387,9 @@ _call_Us00242CA0$:
 	mov 	eax, DWORD PTR [ebp-228]
 	mov 	DWORD PTR [ebp-24], eax
 	; goto label11
-	jmp	_call_Us0025AE60$
+	jmp	_call_Us000001F07B42A5C0$
 	; label20:
-_call_Us00242D80$:
+_call_Us000001F07B42B340$:
 	; t41 := esp + offset
 	mov 	eax, DWORD PTR [ebp-12]
 	add 	eax, DWORD PTR [ebp-24]
@@ -408,7 +408,7 @@ _call_Us00242D80$:
 	; t44 := (unsigned int)offset
 	mov 	eax, DWORD PTR [ebp-24]
 	mov 	DWORD PTR [ebp-244], eax
-	; t45 := t44 + .integer44
+	; t45 := t44 + .integer43
 	mov 	eax, DWORD PTR [ebp-244]
 	add 	eax, 4
 	mov 	DWORD PTR [ebp-248], eax
@@ -416,13 +416,13 @@ _call_Us00242D80$:
 	mov 	eax, DWORD PTR [ebp-248]
 	mov 	DWORD PTR [ebp-24], eax
 	; goto label11
-	jmp	_call_Us0025AE60$
+	jmp	_call_Us000001F07B42A5C0$
 	; label21:
-_call_Us00242ED0$:
+_call_Us000001F07B42B700$:
 	; if nth > narg goto label22
 	mov 	eax, DWORD PTR [ebp+28]
 	cmp	eax, DWORD PTR [ebp-20]
-	jg	_call_Us00242F40$
+	jg	_call_Us000001F07B42B940$
 	; t46 := esp + offset
 	mov 	eax, DWORD PTR [ebp-12]
 	add 	eax, DWORD PTR [ebp-24]
@@ -443,9 +443,9 @@ _call_Us00242ED0$:
 	mov 	eax, DWORD PTR [ebp-272]
 	mov	[ecx], eax
 	; goto label23
-	jmp	_call_Us00242FB0$
+	jmp	_call_Us000001F07B42AEC0$
 	; label22:
-_call_Us00242F40$:
+_call_Us000001F07B42B940$:
 	; t50 := esp + offset
 	mov 	eax, DWORD PTR [ebp-12]
 	add 	eax, DWORD PTR [ebp-24]
@@ -462,11 +462,11 @@ _call_Us00242F40$:
 	mov 	ax, WORD PTR [ebp-282]
 	mov	[ecx], ax
 	; label23:
-_call_Us00242FB0$:
+_call_Us000001F07B42AEC0$:
 	; t53 := (unsigned int)offset
 	mov 	eax, DWORD PTR [ebp-24]
 	mov 	DWORD PTR [ebp-252], eax
-	; t54 := t53 + .integer44
+	; t54 := t53 + .integer43
 	mov 	eax, DWORD PTR [ebp-252]
 	add 	eax, 4
 	mov 	DWORD PTR [ebp-256], eax
@@ -474,9 +474,9 @@ _call_Us00242FB0$:
 	mov 	eax, DWORD PTR [ebp-256]
 	mov 	DWORD PTR [ebp-24], eax
 	; goto label11
-	jmp	_call_Us0025AE60$
+	jmp	_call_Us000001F07B42A5C0$
 	; label24:
-_call_Us0025BA30$:
+_call_Us000001F07B42ABC0$:
 	; t55 := esp + offset
 	mov 	eax, DWORD PTR [ebp-12]
 	add 	eax, DWORD PTR [ebp-24]
@@ -495,7 +495,7 @@ _call_Us0025BA30$:
 	; t58 := (unsigned int)offset
 	mov 	eax, DWORD PTR [ebp-24]
 	mov 	DWORD PTR [ebp-300], eax
-	; t59 := t58 + .integer44
+	; t59 := t58 + .integer43
 	mov 	eax, DWORD PTR [ebp-300]
 	add 	eax, 4
 	mov 	DWORD PTR [ebp-304], eax
@@ -503,13 +503,13 @@ _call_Us0025BA30$:
 	mov 	eax, DWORD PTR [ebp-304]
 	mov 	DWORD PTR [ebp-24], eax
 	; goto label11
-	jmp	_call_Us0025AE60$
+	jmp	_call_Us000001F07B42A5C0$
 	; label25:
-_call_Us0025B950$:
+_call_Us000001F07B429C00$:
 	; if nth > narg goto label26
 	mov 	eax, DWORD PTR [ebp+28]
 	cmp	eax, DWORD PTR [ebp-20]
-	jg	_call_Us0025B9C0$
+	jg	_call_Us000001F07B42A140$
 	; t60 := esp + offset
 	mov 	eax, DWORD PTR [ebp-12]
 	add 	eax, DWORD PTR [ebp-24]
@@ -530,9 +530,9 @@ _call_Us0025B950$:
 	mov 	eax, DWORD PTR [ebp-328]
 	mov	[ecx], eax
 	; goto label27
-	jmp	_call_Us0025BAA0$
+	jmp	_call_Us000001F07B429A80$
 	; label26:
-_call_Us0025B9C0$:
+_call_Us000001F07B42A140$:
 	; t64 := esp + offset
 	mov 	eax, DWORD PTR [ebp-12]
 	add 	eax, DWORD PTR [ebp-24]
@@ -546,11 +546,11 @@ _call_Us0025B9C0$:
 	mov 	al, BYTE PTR [ebp-333]
 	mov	[ecx], al
 	; label27:
-_call_Us0025BAA0$:
+_call_Us000001F07B429A80$:
 	; t66 := (unsigned int)offset
 	mov 	eax, DWORD PTR [ebp-24]
 	mov 	DWORD PTR [ebp-308], eax
-	; t67 := t66 + .integer44
+	; t67 := t66 + .integer43
 	mov 	eax, DWORD PTR [ebp-308]
 	add 	eax, 4
 	mov 	DWORD PTR [ebp-312], eax
@@ -558,9 +558,9 @@ _call_Us0025BAA0$:
 	mov 	eax, DWORD PTR [ebp-312]
 	mov 	DWORD PTR [ebp-24], eax
 	; goto label11
-	jmp	_call_Us0025AE60$
+	jmp	_call_Us000001F07B42A5C0$
 	; label28:
-_call_Us0025AFB0$:
+_call_Us000001F07B42B580$:
 	; t68 := esp + offset
 	mov 	eax, DWORD PTR [ebp-12]
 	add 	eax, DWORD PTR [ebp-24]
@@ -579,7 +579,7 @@ _call_Us0025AFB0$:
 	; t71 := (unsigned int)offset
 	mov 	eax, DWORD PTR [ebp-24]
 	mov 	DWORD PTR [ebp-352], eax
-	; t72 := t71 + .integer44
+	; t72 := t71 + .integer43
 	mov 	eax, DWORD PTR [ebp-352]
 	add 	eax, 4
 	mov 	DWORD PTR [ebp-356], eax
@@ -587,9 +587,9 @@ _call_Us0025AFB0$:
 	mov 	eax, DWORD PTR [ebp-356]
 	mov 	DWORD PTR [ebp-24], eax
 	; goto label11
-	jmp	_call_Us0025AE60$
+	jmp	_call_Us000001F07B42A5C0$
 	; label29:
-_call_Us0025B4F0$:
+_call_Us000001F07B42A200$:
 	; t73 := p + 12
 	mov 	eax, DWORD PTR [ebp-68]
 	add 	eax, 12
@@ -628,65 +628,65 @@ _call_Us0025B4F0$:
 	add 	eax, DWORD PTR [ebp-360]
 	mov 	DWORD PTR [ebp-24], eax
 	; goto label11
-	jmp	_call_Us0025AE60$
+	jmp	_call_Us000001F07B42A5C0$
 	; goto label11
-	jmp	_call_Us0025AE60$
+	jmp	_call_Us000001F07B42A5C0$
 	; label9:
-_call_Us0025B790$:
+_call_Us000001F07B42B880$:
 	; if kind == 1 goto label10
 	mov 	eax, DWORD PTR [ebp-72]
 	cmp	eax, 1
-	je	_call_Us00242840$
+	je	_call_Us000001F07B410D30$
 	; if kind == 2 goto label12
 	mov 	eax, DWORD PTR [ebp-72]
 	cmp	eax, 2
-	je	_call_Us002428B0$
+	je	_call_Us000001F07B4104F0$
 	; if kind == 3 goto label13
 	mov 	eax, DWORD PTR [ebp-72]
 	cmp	eax, 3
-	je	_call_Us00242AE0$
+	je	_call_Us000001F07B40FBF0$
 	; if kind == 4 goto label16
 	mov 	eax, DWORD PTR [ebp-72]
 	cmp	eax, 4
-	je	_call_Us00242D10$
+	je	_call_Us000001F07B4107F0$
 	; if kind == 5 goto label17
 	mov 	eax, DWORD PTR [ebp-72]
 	cmp	eax, 5
-	je	_call_Us00242A00$
+	je	_call_Us000001F07B40FD70$
 	; if kind == 6 goto label18
 	mov 	eax, DWORD PTR [ebp-72]
 	cmp	eax, 6
-	je	_call_Us00242C30$
+	je	_call_Us000001F07B410730$
 	; if kind == 7 goto label19
 	mov 	eax, DWORD PTR [ebp-72]
 	cmp	eax, 7
-	je	_call_Us00242CA0$
+	je	_call_Us000001F07B410BB0$
 	; if kind == 8 goto label20
 	mov 	eax, DWORD PTR [ebp-72]
 	cmp	eax, 8
-	je	_call_Us00242D80$
+	je	_call_Us000001F07B42B340$
 	; if kind == 9 goto label21
 	mov 	eax, DWORD PTR [ebp-72]
 	cmp	eax, 9
-	je	_call_Us00242ED0$
+	je	_call_Us000001F07B42B700$
 	; if kind == 10 goto label24
 	mov 	eax, DWORD PTR [ebp-72]
 	cmp	eax, 10
-	je	_call_Us0025BA30$
+	je	_call_Us000001F07B42ABC0$
 	; if kind == 11 goto label25
 	mov 	eax, DWORD PTR [ebp-72]
 	cmp	eax, 11
-	je	_call_Us0025B950$
+	je	_call_Us000001F07B429C00$
 	; if kind == 12 goto label28
 	mov 	eax, DWORD PTR [ebp-72]
 	cmp	eax, 12
-	je	_call_Us0025AFB0$
+	je	_call_Us000001F07B42B580$
 	; if kind == 13 goto label29
 	mov 	eax, DWORD PTR [ebp-72]
 	cmp	eax, 13
-	je	_call_Us0025B4F0$
+	je	_call_Us000001F07B42A200$
 	; label11:
-_call_Us0025AE60$:
+_call_Us000001F07B42A5C0$:
 	; p := p + 16
 	mov 	eax, DWORD PTR [ebp-68]
 	add 	eax, 16
@@ -696,15 +696,15 @@ _call_Us0025AE60$:
 	add 	eax, 1
 	mov 	DWORD PTR [ebp-20], eax
 	; goto label7
-	jmp	_call_Us00242A70$
+	jmp	_call_Us000001F07B40F230$
 	; label8:
-_call_Us00242BC0$:
+_call_Us000001F07B40F770$:
 	; goto label30
-	jmp	_call_Us0025ABC0$
+	jmp	_call_Us000001F07B42A380$
 	; label31:
-_call_Us0025B090$:
+_call_Us000001F07B42A2C0$:
 	; label32:
-_call_Us0025B480$:
+_call_Us000001F07B42B7C0$:
 	; t78 := (void (*)(void))pf
 	mov 	eax, DWORD PTR [ebp+16]
 	mov 	DWORD PTR [ebp-384], eax
@@ -712,9 +712,9 @@ _call_Us0025B480$:
 	mov 	eax, DWORD PTR [ebp-384]
 	call	eax
 	; goto label33
-	jmp	_call_Us0025AC30$
+	jmp	_call_Us000001F07B42A440$
 	; label34:
-_call_Us0025B5D0$:
+_call_Us000001F07B429E40$:
 	; t79 := r
 	mov 	eax, DWORD PTR [ebp+12]
 	mov 	DWORD PTR [ebp-388], eax
@@ -732,9 +732,9 @@ _call_Us0025B5D0$:
 	mov 	[ebx  ], eax
 	mov 	[ebx+4], edx
 	; goto label33
-	jmp	_call_Us0025AC30$
+	jmp	_call_Us000001F07B42A440$
 	; label35:
-_call_Us0025B870$:
+_call_Us000001F07B429FC0$:
 	; t82 := r
 	mov 	eax, DWORD PTR [ebp+12]
 	mov 	DWORD PTR [ebp-404], eax
@@ -752,9 +752,9 @@ _call_Us0025B870$:
 	mov 	[ebx  ], eax
 	mov 	[ebx+4], edx
 	; goto label33
-	jmp	_call_Us0025AC30$
+	jmp	_call_Us000001F07B42A440$
 	; label36:
-_call_Us0025B560$:
+_call_Us000001F07B429F00$:
 	; t85 := r
 	mov 	eax, DWORD PTR [ebp+12]
 	mov 	DWORD PTR [ebp-420], eax
@@ -770,9 +770,9 @@ _call_Us0025B560$:
 	mov 	eax, DWORD PTR [ebp-428]
 	mov	[ecx], eax
 	; goto label33
-	jmp	_call_Us0025AC30$
+	jmp	_call_Us000001F07B42A440$
 	; label37:
-_call_Us0025B6B0$:
+_call_Us000001F07B42B640$:
 	; t88 := r
 	mov 	eax, DWORD PTR [ebp+12]
 	mov 	DWORD PTR [ebp-432], eax
@@ -791,35 +791,35 @@ _call_Us0025B6B0$:
 	mov 	[ebx  ], eax
 	mov 	[ebx+4], edx
 	; goto label33
-	jmp	_call_Us0025AC30$
+	jmp	_call_Us000001F07B42A440$
 	; goto label33
-	jmp	_call_Us0025AC30$
+	jmp	_call_Us000001F07B42A440$
 	; label30:
-_call_Us0025ABC0$:
+_call_Us000001F07B42A380$:
 	; if rk == 0 goto label31
 	mov 	eax, DWORD PTR [ebp+32]
 	cmp	eax, 0
-	je	_call_Us0025B090$
+	je	_call_Us000001F07B42A2C0$
 	; if rk == 13 goto label32
 	mov 	eax, DWORD PTR [ebp+32]
 	cmp	eax, 13
-	je	_call_Us0025B480$
+	je	_call_Us000001F07B42B7C0$
 	; if rk == 1 goto label34
 	mov 	eax, DWORD PTR [ebp+32]
 	cmp	eax, 1
-	je	_call_Us0025B5D0$
+	je	_call_Us000001F07B429E40$
 	; if rk == 2 goto label35
 	mov 	eax, DWORD PTR [ebp+32]
 	cmp	eax, 2
-	je	_call_Us0025B870$
+	je	_call_Us000001F07B429FC0$
 	; if rk == 3 goto label36
 	mov 	eax, DWORD PTR [ebp+32]
 	cmp	eax, 3
-	je	_call_Us0025B560$
+	je	_call_Us000001F07B429F00$
 	; goto label37
-	jmp	_call_Us0025B6B0$
+	jmp	_call_Us000001F07B42B640$
 	; label33:
-_call_Us0025AC30$:
+_call_Us000001F07B42A440$:
 	; leave
 	mov 	esp, ebp
 	pop	ebx
