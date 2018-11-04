@@ -38,6 +38,11 @@ namespace tacsim {
     strcpy_s(dst, -1, src);
     return dst;
   }
+  char* unsafe_strncpy(char* dst, const char* src, size_t size)
+  {
+    strncpy_s(dst, size+1, src, -1);
+    return dst;
+  }
   char* sbrk(int sz)
   {
     char* p = (char*)malloc(sz);
@@ -75,6 +80,7 @@ tacsim::external::table_t::table_t()
   REGISTER_MACRO(vprintf);
 #ifndef _MSC_VER
   REGISTER_MACRO(strcpy);
+  REGISTER_MACRO(strncpy);
   REGISTER_MACRO(scanf);
   REGISTER_MACRO(sscanf);
   REGISTER_MACRO(strcat);
@@ -89,6 +95,11 @@ tacsim::external::table_t::table_t()
     insert(make_pair("strcpy_s", p));
     insert(make_pair("strcpy", unsafe_strcpy));
   }
+  {
+    REGISTER_MACRO("strncpy_s");
+    insert(make_pair("strncpy", unsafe_strncpy));
+  }
+
   REGISTER_MACRO(scanf_s);
   REGISTER_MACRO(sscanf_s);
   {
@@ -133,7 +144,7 @@ tacsim::external::table_t::table_t()
   }
 #endif // __GNUC__
   {
-#ifdef __CYGWIN__          
+#ifdef __CYGWIN__
     typedef char* FUNC(const char *, const char *);
 #else  //  __CYGWIN__
     typedef const char* FUNC(const char *, const char *);                

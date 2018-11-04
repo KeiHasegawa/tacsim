@@ -79,12 +79,12 @@ void tacsim::allocate::usr2(COMPILER::usr* u)
         using namespace std;
         using namespace COMPILER;
 
-        usr::flag flag = u->m_flag;
+        usr::flag_t flag = u->m_flag;
 
         if (flag & usr::TYPEDEF)
                 return;
 
-        usr::flag mask = usr::flag(usr::EXTERN | usr::FUNCTION);
+        usr::flag_t mask = usr::flag_t(usr::EXTERN | usr::FUNCTION);
         if (flag & mask){
                 if (loc_mode) {
                         if (enter_mode)
@@ -149,7 +149,7 @@ void tacsim::allocate::constant_(COMPILER::usr* u)
         using namespace std;
         using namespace COMPILER;
 
-        usr::flag flag = u->m_flag;
+        usr::flag_t flag = u->m_flag;
         if (loc_mode)
                 return;
 
@@ -351,7 +351,7 @@ bool tacsim::definition_of(std::pair<COMPILER::var*, void*> x, std::string name)
                 return false;
         if (!is_external_declaration(u))
                 return false;
-        usr::flag flag = u->m_flag;
+        usr::flag_t flag = u->m_flag;
         if (flag & usr::EXTERN)
                 return false;
         return true;

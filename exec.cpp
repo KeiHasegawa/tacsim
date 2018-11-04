@@ -45,7 +45,7 @@ bool tacsim::call_direct(std::string name, pc_t ra)
   while (pc != code.end()) {
     const tac* ptr = *pc;
     pc = exec::select(pc);
-    if (ptr->id == tac::RETURN)
+    if (ptr->m_id == tac::RETURN)
       break;
   }
   current_code.pop_back();
@@ -59,7 +59,7 @@ tacsim::pc_t tacsim::exec::select(tacsim::pc_t pc)
   using namespace COMPILER;
 
   tac* ptr = *pc;
-  table_t::const_iterator p = table.find(ptr->id);
+  table_t::const_iterator p = table.find(ptr->m_id);
   assert(p != table.end());
   FUNC* pf = p->second;
   return (*pf)(pc);

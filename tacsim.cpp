@@ -36,6 +36,23 @@ extern "C" DLL_EXPORT int generator_seed()
   return r;
 }
 
+extern "C" DLL_EXPORT
+int generator_wchar_type()
+{
+  using namespace COMPILER;
+#ifdef linux
+#ifdef DEBIAN 
+  return (int)type::INT;
+#else // DEBIAN
+  return (int)type::LONG;
+#endif /// DEBIAN
+#endif // linux
+#ifdef __APPLE__
+  return (int)type::INT;
+#endif // __APPLE__
+  return (int)type::USHORT;
+}
+
 namespace tacsim {
   using namespace std;
   string m_generator;
