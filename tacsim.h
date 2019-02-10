@@ -1,6 +1,13 @@
 #ifndef _TACSIM_H_
 #define _TACSIM_H_
 
+#ifdef CXX_GENERATOR
+#define COMPILER cxx_compiler
+#define param_scope scope
+#else // CXX_GENERATOR
+#define COMPILER c_compiler
+#endif // CXX_GENERATOR
+
 namespace tacsim {
   using namespace std;
   using namespace COMPILER;

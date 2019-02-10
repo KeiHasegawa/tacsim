@@ -16,9 +16,14 @@ SRCS =	allocate.cpp \
 OBJS = $(SRCS:.cpp=.o)
 TACSIM_DLL = tacsim.dll
 
+XX_OBJS = $(SRCS:.cpp=.obj)
+TACSIM_XX_DLL = tacsimxx.dll
+
 DEBUG_FLAG = -g
 PIC_FLAG = -fPIC
 CXXFLAGS = $(DEBUG_FLAG) $(PIC_FLAG) -I$(HCC1_SRCDIR) -w
+CXXFLAGS_FOR_XX = $(DEBUG_FLAG) $(PIC_FLAG) -I$(HCXX1_SRCDIR) -w \
+-DCXX_GENERATOR
 
 UNAME := $(shell uname)
 DLL_FLAG =  -shared
@@ -33,10 +38,16 @@ endif
 
 RM = rm -r -f
 
-all:$(TACSIM_DLL)
+all:$(TACSIM_DLL) $(TACSIM_XX_DLL)
 
 $(TACSIM_DLL) : $(OBJS)
 	$(CXX) $(DEBUG_FLAG) $(PROF_FLAG) $(DLL_FLAG) -o $@ $(OBJS)
+
+$(TACSIM_XX_DLL) : $(XX_OBJS)
+	$(CXX) $(DEBUG_FLAG) $(PROF_FLAG) $(DLL_FLAG) -o $@ $(XX_OBJS)
+
+%.obj : %.cpp
+	$(CXX) $(CXXFLAGS_FOR_XX) $< -o $@ -c
 
 clean:
 	$(RM) *.o *~ $(TACSIM_DLL) x64 Debug .vs
