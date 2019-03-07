@@ -508,7 +508,8 @@ void tacsim::allocate::loc_var(COMPILER::scope* ptr)
   using namespace std;
   using namespace COMPILER;
         
-  assert(ptr->m_id == scope::BLOCK);
+  if (ptr->m_id != scope::BLOCK)
+    return;
   block* b = static_cast<block*>(ptr);
   const map<string, vector<usr*> >& usrs = b->m_usrs;
   for_each(usrs.begin(), usrs.end(), usr1);
