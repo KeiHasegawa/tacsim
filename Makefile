@@ -50,7 +50,7 @@ $(TACSIM_XX_DLL) : $(XX_OBJS)
 	$(CXX) $(CXXFLAGS_FOR_XX) $< -o $@ -c
 
 clean:
-	$(RM) *.o *~ $(TACSIM_DLL) x64 Debug .vs
+	$(RM) *.o *.obj *~ $(TACSIM_DLL) x64 Debug .vs
 	$(RM) call_Us.x64.vs.i call_Us.x64.vs.s
 	$(RM) -r .vs x64 Debug Release
 
