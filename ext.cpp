@@ -37,7 +37,7 @@ tacsim::external::table_t tacsim::external::table;
 #define REGISTER_MACRO_OVERLOAD(name) \
 { \
   typedef double FUNC(double);	   \
-  FUNC* tmp = ::name;
+  FUNC* tmp = ::name;	\
   insert(make_pair( #name ,(void*)tmp )); \
 }
 #else // _MSC_VER
@@ -110,11 +110,9 @@ tacsim::external::table_t::table_t()
   REGISTER_MACRO_OVERLOAD(atanh);
   REGISTER_MACRO_OVERLOAD(exp);
   REGISTER_MACRO_OVERLOAD(log);
-  REGISTER_MACRO_OVERLOAD(pow);
   REGISTER_MACRO_OVERLOAD(ceil);
   REGISTER_MACRO_OVERLOAD(fabs);
   REGISTER_MACRO_OVERLOAD(floor);
-  REGISTER_MACRO_OVERLOAD(fmod);
   REGISTER_MACRO_OVERLOAD(sqrt);
 
 #ifndef _MSC_VER
