@@ -32,6 +32,22 @@ tacsim::external::table_t tacsim::external::table;
   insert(make_pair( #name ,tmp )); \
 }
 
+
+#ifdef _MSC_VER
+#define REGISTER_MACRO_OVERLOAD(name) \
+{ \
+  typedef double FUNC(double);	   \
+  FUNC* tmp = ::name;
+  insert(make_pair( #name ,(void*)tmp )); \
+}
+#else // _MSC_VER
+#define REGISTER_MACRO_OVERLOAD(name) \
+{ \
+  void* tmp = (void*)::name;	   \
+  insert(make_pair( #name ,tmp )); \
+}
+#endif // _MSC_VER
+
 #ifdef _MSC_VER
 namespace tacsim {
   char* unsafe_strcpy(char* dst, const char* src)
@@ -79,6 +95,28 @@ tacsim::external::table_t::table_t()
   REGISTER_MACRO(stat);
   REGISTER_MACRO(ferror);
   REGISTER_MACRO(vprintf);
+
+  REGISTER_MACRO_OVERLOAD(acos);
+  REGISTER_MACRO_OVERLOAD(asin);
+  REGISTER_MACRO_OVERLOAD(atan);
+  REGISTER_MACRO_OVERLOAD(cos);
+  REGISTER_MACRO_OVERLOAD(sin);
+  REGISTER_MACRO_OVERLOAD(tan);
+  REGISTER_MACRO_OVERLOAD(cosh);
+  REGISTER_MACRO_OVERLOAD(sinh);
+  REGISTER_MACRO_OVERLOAD(tanh);
+  REGISTER_MACRO_OVERLOAD(acosh);
+  REGISTER_MACRO_OVERLOAD(asinh);
+  REGISTER_MACRO_OVERLOAD(atanh);
+  REGISTER_MACRO_OVERLOAD(exp);
+  REGISTER_MACRO_OVERLOAD(log);
+  REGISTER_MACRO_OVERLOAD(pow);
+  REGISTER_MACRO_OVERLOAD(ceil);
+  REGISTER_MACRO_OVERLOAD(fabs);
+  REGISTER_MACRO_OVERLOAD(floor);
+  REGISTER_MACRO_OVERLOAD(fmod);
+  REGISTER_MACRO_OVERLOAD(sqrt);
+
 #ifndef _MSC_VER
   REGISTER_MACRO(strcpy);
   REGISTER_MACRO(strncpy);
@@ -153,18 +191,6 @@ tacsim::external::table_t::table_t()
     FUNC* tmp = ::strstr;
     insert(make_pair("strstr", (void*)tmp));
   }
-#ifdef _MSC_VER
-  {
-    typedef double FUNC(double);
-    FUNC* tmp = ::sqrt;
-    insert(make_pair("sqrt", (void*)tmp));
-  }
-#else // _MSC_VER
-  {
-    void* tmp = (void*)::sqrt;
-    insert(make_pair("sqrt", tmp));
-  }
-#endif // _MSC_VER
 #ifndef _MSC_VER
   REGISTER_MACRO(strdup);
   REGISTER_MACRO(read);
