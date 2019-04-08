@@ -69,7 +69,7 @@ void tacsim::allocate::usr1(const std::pair<std::string, std::vector<COMPILER::u
 namespace tacsim {
   using namespace std;
   using namespace COMPILER;
-  bool definition_of(pair<var*, void*> x, string name);
+  bool definition_of(pair<var*, void*> x, usr* u);
 } // end of namespace tacsim
 
 // This function is called when
@@ -85,6 +85,11 @@ void tacsim::allocate::usr2(COMPILER::usr* u)
 
   if (flag & usr::TYPEDEF)
     return;
+
+#ifdef CXX_GENERATOR
+  if (flag & usr::NAMESPACE)
+    return;
+#endif // CXX_GENERATOR
 
   usr::flag_t mask = usr::flag_t(usr::EXTERN | usr::FUNCTION);
   if (flag & mask){
@@ -131,9 +136,8 @@ void tacsim::allocate::usr2(COMPILER::usr* u)
   if (is_external_declaration(u)) {
     if (loc_mode)
       return;
-    string name = u->m_name;
     address_table_t::const_iterator p =
-      find_if(g_static.begin(), g_static.end(), bind2nd(ptr_fun(definition_of), name));
+      find_if(g_static.begin(), g_static.end(), bind2nd(ptr_fun(definition_of), u));
     if (p != g_static.end())
       return;
     int size = u->m_type->size();
@@ -331,33 +335,36 @@ void* tacsim::getaddr(COMPILER::var* v, bool prev) throw (not_found)
   }
   usr* u = v->usr_cast();
   assert(u);
-  string name = u->m_name;
-  p = find_if(g_static.begin(), g_static.end(), bind2nd(ptr_fun(definition_of), name));
+  p = find_if(g_static.begin(), g_static.end(), bind2nd(ptr_fun(definition_of), u));
   if (p != g_static.end()) {
     assert(p->second);
     return p->second;
   }
 
+  string name = u->m_name;
   map<string, void*>::const_iterator q = external::table.find(name);
   if (q != external::table.end())
     return q->second;
   throw not_found(u);
 }
 
-bool tacsim::definition_of(std::pair<COMPILER::var*, void*> x, std::string name)
+bool
+tacsim::definition_of(std::pair<COMPILER::var*, void*> x, COMPILER::usr* uy)
 {
   using namespace std;
   using namespace COMPILER;
   var* v = x.first;
-  usr* u = v->usr_cast();
-  if (!u)
+  usr* ux = v->usr_cast();
+  if (!ux)
     return false;
-  if (u->m_name != name)
+  if (ux->m_name != uy->m_name)
     return false;
-  if (!is_external_declaration(u))
+  if (!is_external_declaration(ux))
     return false;
-  usr::flag_t flag = u->m_flag;
+  usr::flag_t flag = ux->m_flag;
   if (flag & usr::EXTERN)
+    return false;
+  if (ux->m_scope != uy->m_scope)
     return false;
   return true;
 }
