@@ -231,4 +231,9 @@ tacsim::external::table_t::table_t()
   REGISTER_MACRO(_IO_getc);
   REGISTER_MACRO(_IO_putc);
 #endif // linux
+
+#ifdef CXX_GENERATOR
+  insert(make_pair("new", (void*)malloc));
+  insert(make_pair("delete", (void*)free));
+#endif // CXX_GENERATOR
 }

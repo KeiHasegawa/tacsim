@@ -37,6 +37,7 @@ namespace tacsim {
   } // end of namespace external
   typedef vector<tac*>::const_iterator pc_t;
   bool call_direct(string name, pc_t ret);
+  bool call_usr(usr* u, pc_t ret);
   extern int main_ret;
   extern const vector<pair<const fundef*, vector<tac*> > >* current_funcs;
   inline bool cmp_name(pair<const fundef*, vector<tac*> > x, string name)
@@ -47,6 +48,7 @@ namespace tacsim {
     const usr* u = fun->m_usr;
     return u->m_name == name;
   }
+  bool cmp_signature(pair<const fundef*, vector<tac*> > x, usr* uy);
   template<class K, class V> struct destroy {
     void operator()(std::pair<K,V> x) const
     {

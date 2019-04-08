@@ -25,7 +25,24 @@ namespace tacsim {
     ~return_address() { m_stack.pop(); }
   };
   stack<pc_t> return_address::m_stack;
+  bool call_common(const fundef* fun, const vector<tac*>& code, pc_t ra)
+  {
+    return_address sweeper(ra);
+    allocate::entrance(fun->m_param);
+    current_code.push_back(&code);
+    pc_t pc = code.begin();
+    while (pc != code.end()) {
+      const tac* ptr = *pc;
+      pc = exec::select(pc);
+      if (ptr->m_id == tac::RETURN)
+	break;
+    }
+    current_code.pop_back();
+    allocate::exit(fun->m_param);
+    return true;
+  }
 } // end of namespace tacsim
+
 
 bool tacsim::call_direct(std::string name, pc_t ra)
 {
@@ -37,21 +54,80 @@ bool tacsim::call_direct(std::string name, pc_t ra)
     find_if(funcs.begin(), funcs.end(), bind2nd(ptr_fun(cmp_name), name));
   if (p == funcs.end())
     return false;
-  return_address sweeper(ra);
-  const fundef* fun = p->first;
-  allocate::entrance(fun->m_param);
-  const vector<tac*>& code = p->second;
-  current_code.push_back(&code);
-  pc_t pc = code.begin();
-  while (pc != code.end()) {
-    const tac* ptr = *pc;
-    pc = exec::select(pc);
-    if (ptr->m_id == tac::RETURN)
-      break;
+  return call_common(p->first, p->second, ra);
+}
+
+#ifdef CXX_GENERATOR
+namespace tacsim {
+  using namespace std;
+  using namespace COMPILER;
+  string scope_name(scope* p)
+  {
+    if ( p->m_id == scope::TAG ){
+      tag* tg = static_cast<tag*>(p);
+      string name = tg->m_name;
+      ostringstream os;
+      os << name.length() << name;
+      return scope_name(tg->m_parent) + os.str();
+    }
+    if ( p->m_id == scope::NAMESPACE ){
+      name_space* ns = static_cast<name_space*>(p);
+      string name = ns->m_name;
+      ostringstream os;
+      os << name.length() << name;
+      return scope_name(ns->m_parent) + os.str();
+    }
+    return "";
   }
-  current_code.pop_back();
-  allocate::exit(fun->m_param);
-  return true;
+  bool cmp_signature(pair<const fundef*, vector<tac*> > x, usr* uy)
+  {
+    const fundef* fun = x.first;
+    const usr* ux = fun->m_usr;
+    if (ux->m_name != uy->m_name)
+      return false;
+    if (ux->m_flag & usr::C_SYMBOL)
+      return uy->m_flag & usr::C_SYMBOL;
+    if (uy->m_flag & usr::C_SYMBOL)
+      return false;
+    if (scope_name(ux->m_scope) != scope_name(uy->m_scope))
+      return false;
+    const type* Tx = ux->m_type;
+    const type* Ty = uy->m_type;
+    assert(Tx->m_id == type::FUNC);
+    assert(Ty->m_id == type::FUNC);
+    typedef const func_type FT;
+    FT* ftx = static_cast<FT*>(Tx);
+    FT* fty = static_cast<FT*>(Ty);
+    const vector<const type*>& paramx = ftx->param();
+    const vector<const type*>& paramy = fty->param();
+    ostringstream osx;
+    for (auto T : paramx)
+      T->encode(osx);
+    ostringstream osy;
+    for (auto T : paramy)
+      T->encode(osy);
+    if (osx.str() != osy.str())
+      return false;
+    return true;
+  }
+} // end of namespace tacsim 
+#endif // CXX_GENERATOR
+
+bool tacsim::call_usr(usr* u, pc_t ra)
+{
+  using namespace std;
+  using namespace COMPILER;
+#ifdef CXX_GENERATOR
+  const vector<pair<const fundef*, vector<tac*> > >& funcs = *current_funcs;
+  vector<pair<const fundef*, vector<tac*> > >::const_iterator p =
+    find_if(funcs.begin(), funcs.end(), bind2nd(ptr_fun(cmp_signature), u));
+  if (p == funcs.end())
+    return false;
+  return call_common(p->first, p->second, ra);
+#else // CXX_GENERATOR
+  string name = u->m_name;
+  return call_direct(name, ra);
+#endif // CXX_GENERATOR
 }
 
 tacsim::pc_t tacsim::exec::select(tacsim::pc_t pc)
@@ -888,7 +964,7 @@ namespace tacsim {
   using namespace std;
   using namespace COMPILER;
   namespace call_impl {
-    pc_t via_name(pc_t);
+    pc_t not_pointer(pc_t);
     pc_t via_pointer(pc_t);
     inline bool cmp_usr(const pair<const fundef*, vector<tac*> > x, void* pf)
     {
@@ -906,10 +982,10 @@ tacsim::pc_t tacsim::call(tacsim::pc_t pc)
 
   tac* ptr = *pc;
   const type* T = ptr->y->m_type;
-  return T->scalar() ? call_impl::via_pointer(pc) : call_impl::via_name(pc);
+  return T->scalar() ? call_impl::via_pointer(pc) : call_impl::not_pointer(pc);
 }
 
-tacsim::pc_t tacsim::call_impl::via_name(tacsim::pc_t pc)
+tacsim::pc_t tacsim::call_impl::not_pointer(tacsim::pc_t pc)
 {
   using namespace std;
   using namespace COMPILER;
@@ -917,8 +993,7 @@ tacsim::pc_t tacsim::call_impl::via_name(tacsim::pc_t pc)
   tac* ptr = *pc;
   var* v = ptr->y;
   usr* u = v->usr_cast();
-  string name = u->m_name;
-  if (!call_direct(name,pc+1)) {
+  if (!call_usr(u,pc+1)) {
     // name is not user-defined function like "printf". 
     void* pf = getaddr(ptr->y);
     const type* T = ptr->y->m_type;  //  T is function_type;
@@ -941,8 +1016,7 @@ tacsim::pc_t tacsim::call_impl::via_pointer(pc_t pc)
     find_if(funcs.begin(), funcs.end(), bind2nd(ptr_fun(cmp_usr), pf));
   if (p != funcs.end()) {
     usr* u = p->first->m_usr;
-    string name = u->m_name;
-    bool b = call_direct(name, pc+1);
+    bool b = call_usr(u, pc+1);
     assert(b);
     return pc + 1;
   }

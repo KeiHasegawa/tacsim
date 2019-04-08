@@ -361,11 +361,12 @@ tacsim::definition_of(std::pair<COMPILER::var*, void*> x, COMPILER::usr* uy)
     return false;
   if (!is_external_declaration(ux))
     return false;
-  usr::flag_t flag = ux->m_flag;
-  if (flag & usr::EXTERN)
+  if ((ux->m_flag & usr::EXTERN) && !(ux->m_flag & usr::FUNCTION))
     return false;
-  if (ux->m_scope != uy->m_scope)
-    return false;
+  if (ux->m_scope != uy->m_scope) {
+    if (uy->m_scope->m_id != scope::BLOCK)
+      return false;
+  }
   return true;
 }
 
