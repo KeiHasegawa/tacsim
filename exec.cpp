@@ -113,7 +113,7 @@ namespace tacsim {
 } // end of namespace tacsim 
 #endif // CXX_GENERATOR
 
-bool tacsim::call_usr(usr* u, pc_t ra)
+bool tacsim::call_usr(COMPILER::usr* u, pc_t ra)
 {
   using namespace std;
   using namespace COMPILER;
