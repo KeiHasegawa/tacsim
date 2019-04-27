@@ -130,6 +130,11 @@ void tacsim::allocate::usr2(COMPILER::usr* u)
   if (flag & usr::STATIC)
     return;
 
+#ifdef CXX_GENERATOR
+  if (flag & usr::OVERLOAD)
+    return;
+#endif // CXX_GENERATOR
+
   if (u->isconstant())
     return constant_(u);
 
@@ -140,7 +145,8 @@ void tacsim::allocate::usr2(COMPILER::usr* u)
       find_if(g_static.begin(), g_static.end(), bind2nd(ptr_fun(definition_of), u));
     if (p != g_static.end())
       return;
-    int size = u->m_type->size();
+    const type* T = u->m_type;
+    int size = T->size();
     assert(size);
     memset(g_static[u] = new char[size], 0, size);
     return;
