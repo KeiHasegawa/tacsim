@@ -70,6 +70,20 @@ namespace tacsim {
   using namespace std;
   using namespace COMPILER;
   bool definition_of(pair<var*, void*> x, usr* u);
+  namespace allocate {
+    inline bool is_static(usr* u)
+    {
+      usr::flag_t flag = u->m_flag;
+#ifdef CXX_GENERATOR
+      if (flag & usr::STATIC_DEF)
+	return true;
+      scope::id_t id = u->m_scope->m_id;
+      return (flag & usr::STATIC) && id != scope::TAG;
+#else // CXX_GENERATOR
+      return flag & usr::STATIC;
+#endif // CXX_GENERATOR
+    }
+  } // end of namespace allocate
 } // end of namespace tacsim
 
 // This function is called when
@@ -104,7 +118,7 @@ void tacsim::allocate::usr2(COMPILER::usr* u)
     return;
   }
 
-  if (flag & usr::STATIC) {
+  if (is_static(u)) {
     if (loc_mode)
       return;
     int size = u->m_type->size();

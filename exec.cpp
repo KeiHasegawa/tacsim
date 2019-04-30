@@ -969,9 +969,20 @@ namespace tacsim {
     inline bool cmp_usr(const pair<const fundef*, vector<tac*> > x, void* pf)
     {
       const fundef* func = x.first;
-      return (void*)func->m_usr == pf;
+      usr* u = func->m_usr;
+      return u == (usr*)pf;
     }
     void common(COMPILER::var* x, void* pf, const func_type*);
+    inline const func_type* get_ft(const type* T)
+    {
+      T = T->unqualified();
+      assert(T->m_id == type::POINTER);
+      const pointer_type* pt = static_cast<const pointer_type*>(T);
+      T = pt->referenced_type();
+      T = T->unqualified();
+      assert(T->m_id == type::FUNC);
+      return static_cast<const func_type*>(T);
+    }
   }
 } // end of namespace tacsim
 
@@ -997,6 +1008,7 @@ tacsim::pc_t tacsim::call_impl::not_pointer(tacsim::pc_t pc)
     // name is not user-defined function like "printf". 
     void* pf = getaddr(ptr->y);
     const type* T = ptr->y->m_type;  //  T is function_type;
+    assert(T->m_id == type::FUNC);
     const func_type* ft = static_cast<const func_type*>(T);
     call_impl::common(ptr->x, pf, ft);
   }
@@ -1020,12 +1032,7 @@ tacsim::pc_t tacsim::call_impl::via_pointer(pc_t pc)
     assert(b);
     return pc + 1;
   }
-  const type* T = ptr->y->m_type;
-  T = T->unqualified();
-  const pointer_type* pt = static_cast<const pointer_type*>(T);
-  T = pt->referenced_type();
-  T = T->unqualified();
-  const func_type* ft = static_cast<const func_type*>(T);
+  const func_type* ft = call_impl::get_ft(ptr->y->m_type);
   call_impl::common(ptr->x, pf, ft);
   return pc + 1;
 }
