@@ -52,7 +52,7 @@ $(TACSIM_XX_DLL) : $(XX_OBJS)
 clean:
 	$(RM) *.o *.obj *~ $(TACSIM_DLL) $(TACSIM_XX_DLL) x64 Debug .vs
 	$(RM) call_Us.x64.vs.i call_Us.x64.vs.s
-	$(RM) -r .vs x64 Debug Release
+	$(RM) -r .vs x64 Debug Release DebugCXX ReleaseCXX
 
 call_Us.x86.gxx.o:call_Us.x86.gxx.cpp
 	$(CXX) -g $(PIC_FLAG) -I$(HCC1_SRCDIR) -w -c -o $@ $<
