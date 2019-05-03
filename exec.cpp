@@ -279,12 +279,12 @@ tacsim::pc_t tacsim::add(tacsim::pc_t pc)
     Tz = Tz->unqualified();
     int sy = Ty->size();
     int sz = Tz->size();
-    if (Ty->m_id == type::POINTER) {
-      assert(Tz->integer());
+    if (Tz->integer()) {
+      assert(Ty->scalar());
       *(void**)x = add_ptr(y, z, sz);
     }
     else {
-      assert(Tz->m_id == type::POINTER && Ty->integer());
+      assert(Ty->integer() && Tz->scalar());
       *(void**)x = add_ptr(z, y, sy);
     }
   }
