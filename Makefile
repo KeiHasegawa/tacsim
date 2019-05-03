@@ -56,3 +56,6 @@ clean:
 
 call_Us.x86.gxx.o:call_Us.x86.gxx.cpp
 	$(CXX) -g $(PIC_FLAG) -I$(HCC1_SRCDIR) -w -c -o $@ $<
+
+call_Us.x86.gxx.obj:call_Us.x86.gxx.cpp
+	$(CXX) -g $(PIC_FLAG) -I$(HCXX1_SRCDIR) -w -c -o $@ $< -DCXX_GENERATOR
