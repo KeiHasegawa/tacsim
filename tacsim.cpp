@@ -187,7 +187,7 @@ bool tacsim::setup()
 
   const vector<pair<const fundef*, vector<tac*> > >& funcs = *current_funcs;
   vector<pair<const fundef*, vector<tac*> > >::const_iterator p =
-    find_if(funcs.begin(), funcs.end(), bind2nd(ptr_fun(cmp_name), "main"));
+    find_if(funcs.begin(), funcs.end(), cmp_name("main"));
   if (p == funcs.end())
     return false;
   const fundef* fun = p->first;

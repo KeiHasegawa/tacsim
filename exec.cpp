@@ -51,7 +51,7 @@ bool tacsim::call_direct(std::string name, pc_t ra)
 
   const vector<pair<const fundef*, vector<tac*> > >& funcs = *current_funcs;
   vector<pair<const fundef*, vector<tac*> > >::const_iterator p =
-    find_if(funcs.begin(), funcs.end(), bind2nd(ptr_fun(cmp_name), name));
+    find_if(funcs.begin(), funcs.end(), cmp_name(name));
   if (p == funcs.end())
     return false;
   return call_common(p->first, p->second, ra);
@@ -79,37 +79,41 @@ namespace tacsim {
     }
     return "";
   }
-  bool cmp_signature(pair<const fundef*, vector<tac*> > x, usr* uy)
-  {
-    const fundef* fun = x.first;
-    const usr* ux = fun->m_usr;
-    if (ux->m_name != uy->m_name)
-      return false;
-    if (ux->m_flag & usr::C_SYMBOL)
-      return uy->m_flag & usr::C_SYMBOL;
-    if (uy->m_flag & usr::C_SYMBOL)
-      return false;
-    if (scope_name(ux->m_scope) != scope_name(uy->m_scope))
-      return false;
-    const type* Tx = ux->m_type;
-    const type* Ty = uy->m_type;
-    assert(Tx->m_id == type::FUNC);
-    assert(Ty->m_id == type::FUNC);
-    typedef const func_type FT;
-    FT* ftx = static_cast<FT*>(Tx);
-    FT* fty = static_cast<FT*>(Ty);
-    const vector<const type*>& paramx = ftx->param();
-    const vector<const type*>& paramy = fty->param();
-    ostringstream osx;
-    for (auto T : paramx)
-      T->encode(osx);
-    ostringstream osy;
-    for (auto T : paramy)
-      T->encode(osy);
-    if (osx.str() != osy.str())
-      return false;
-    return true;
-  }
+  struct cmp_signature {
+    usr* m_uy;
+    cmp_signature(usr* y) : m_uy(y) {}
+    bool operator()(const pair<const fundef*, vector<tac*> >& x)
+    {
+      const fundef* fun = x.first;
+      const usr* ux = fun->m_usr;
+      if (ux->m_name != m_uy->m_name)
+	return false;
+      if (ux->m_flag & usr::C_SYMBOL)
+	return m_uy->m_flag & usr::C_SYMBOL;
+      if (m_uy->m_flag & usr::C_SYMBOL)
+	return false;
+      if (scope_name(ux->m_scope) != scope_name(m_uy->m_scope))
+	return false;
+      const type* Tx =   ux->m_type;
+      const type* Ty = m_uy->m_type;
+      assert(Tx->m_id == type::FUNC);
+      assert(Ty->m_id == type::FUNC);
+      typedef const func_type FT;
+      FT* ftx = static_cast<FT*>(Tx);
+      FT* fty = static_cast<FT*>(Ty);
+      const vector<const type*>& paramx = ftx->param();
+      const vector<const type*>& paramy = fty->param();
+      ostringstream osx;
+      for (auto T : paramx)
+	T->encode(osx);
+      ostringstream osy;
+      for (auto T : paramy)
+	T->encode(osy);
+      if (osx.str() != osy.str())
+	return false;
+      return true;
+    }
+  };
 } // end of namespace tacsim 
 #endif // CXX_GENERATOR
 
@@ -120,7 +124,7 @@ bool tacsim::call_usr(COMPILER::usr* u, pc_t ra)
 #ifdef CXX_GENERATOR
   const vector<pair<const fundef*, vector<tac*> > >& funcs = *current_funcs;
   vector<pair<const fundef*, vector<tac*> > >::const_iterator p =
-    find_if(funcs.begin(), funcs.end(), bind2nd(ptr_fun(cmp_signature), u));
+    find_if(funcs.begin(), funcs.end(), cmp_signature(u));
   if (p == funcs.end())
     return false;
   return call_common(p->first, p->second, ra);
@@ -966,12 +970,16 @@ namespace tacsim {
   namespace call_impl {
     pc_t not_pointer(pc_t);
     pc_t via_pointer(pc_t);
-    inline bool cmp_usr(const pair<const fundef*, vector<tac*> > x, void* pf)
-    {
-      const fundef* func = x.first;
-      usr* u = func->m_usr;
-      return u == (usr*)pf;
-    }
+    struct cmp_usr {
+      void* m_pf;
+      cmp_usr(void* pf) : m_pf(pf) {}
+      bool operator()(const pair<const fundef*, vector<tac*> >& x)
+      {
+	const fundef* func = x.first;
+	usr* u = func->m_usr;
+	return u == (usr*)m_pf;
+      }
+    };
     void common(COMPILER::var* x, void* pf, const func_type*);
     inline const func_type* get_ft(const type* T)
     {
@@ -1024,8 +1032,7 @@ tacsim::pc_t tacsim::call_impl::via_pointer(pc_t pc)
   void* pf = *(void**)getaddr(ptr->y);
   typedef const vector < pair<const fundef*, vector<tac*> > > FUNCS;
   FUNCS& funcs = *current_funcs;
-  FUNCS::const_iterator p =
-    find_if(funcs.begin(), funcs.end(), bind2nd(ptr_fun(cmp_usr), pf));
+  FUNCS::const_iterator p = find_if(funcs.begin(), funcs.end(), cmp_usr(pf));
   if (p != funcs.end()) {
     usr* u = p->first->m_usr;
     bool b = call_usr(u, pc+1);

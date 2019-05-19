@@ -40,15 +40,18 @@ namespace tacsim {
   bool call_usr(usr* u, pc_t ret);
   extern int main_ret;
   extern const vector<pair<const fundef*, vector<tac*> > >* current_funcs;
-  inline bool cmp_name(pair<const fundef*, vector<tac*> > x, string name)
-  {
-    using namespace std;
-    using namespace COMPILER;
-    const fundef* fun = x.first;
-    const usr* u = fun->m_usr;
-    return u->m_name == name;
-  }
-  bool cmp_signature(pair<const fundef*, vector<tac*> > x, usr* uy);
+  struct cmp_name {
+    string m_name;
+    cmp_name(string name) : m_name(name) {}
+    bool operator()(const pair<const fundef*, vector<tac*> >& x)
+    {
+      using namespace std;
+      using namespace COMPILER;
+      const fundef* fun = x.first;
+      const usr* u = fun->m_usr;
+      return u->m_name == m_name;
+    }
+  };
   template<class K, class V> struct destroy {
     void operator()(std::pair<K,V> x) const
     {
