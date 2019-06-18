@@ -124,29 +124,28 @@ const char** tacsim::arg_option(const char** option, int* error)
   return option;
 }
 
-
 extern "C" DLL_EXPORT
 void generator_last(const COMPILER::generator::last_interface_t* ptr)
 {
   using namespace std;
   using namespace COMPILER;
   using namespace tacsim;
-  current_funcs = ptr->m_funcs;
-  allocate::register_funcs();
-  allocate::memory(ptr->m_root);
-  vector<pair<void*, addrof*> >& v = allocate::after_addrof;
-  for_each(v.begin(), v.end(), allocate::set_addrof);
-  v.clear();
-  if (!setup() && !args.empty()) {
-    if (!m_generator.empty())
-      cerr << m_generator << " : ";
-    cerr << "--arg option is specified but `main' function is not declared as";
-    cerr << " `int main(int, char**)'" << '\n';
-    if (!m_generator.empty())
-      cerr << m_generator << " : ";
-    cerr << "--arg option is just ignored." << '\n';
-  }
   try {
+    current_funcs = ptr->m_funcs;
+    allocate::register_funcs();
+    allocate::memory(ptr->m_root);
+    vector<pair<void*, addrof*> >& v = allocate::after_addrof;
+    for_each(v.begin(), v.end(), allocate::set_addrof);
+    v.clear();
+    if (!setup() && !args.empty()) {
+      if (!m_generator.empty())
+	cerr << m_generator << " : ";
+      cerr << "--arg option is specified but `main' function is not";
+      cerr << " declared as `int main(int, char**)'" << '\n';
+      if (!m_generator.empty())
+	cerr << m_generator << " : ";
+      cerr << "--arg option is just ignored." << '\n';
+    }
     vector<tac*> dummy;
     dummy.push_back(0);
     if (!call_direct("main", dummy.end())) {
