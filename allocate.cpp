@@ -335,7 +335,7 @@ void tacsim::allocate::set_addrof(const std::pair<void*, COMPILER::addrof*>& x)
   *dest = (void*)((char*)getaddr(v)+offset);
 }
 
-void* tacsim::getaddr(COMPILER::var* v, bool prev) throw (not_found)
+void* tacsim::getaddr(COMPILER::var* v, bool prev)
 {
   using namespace std;
   using namespace COMPILER;
@@ -361,6 +361,11 @@ void* tacsim::getaddr(COMPILER::var* v, bool prev) throw (not_found)
     return p->second;
   }
 
+  return external::get(u);
+}
+
+void* tacsim::external::get(COMPILER::usr* u) throw (not_found)
+{
   string name = u->m_name;
   map<string, void*>::const_iterator q = external::table.find(name);
   if (q != external::table.end())

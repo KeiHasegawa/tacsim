@@ -28,12 +28,13 @@ namespace tacsim {
     usr* m_usr;
   not_found(usr* u) : m_usr(u) {}
   };
-  void* getaddr(var* v, bool prev = false) throw (not_found);
+  void* getaddr(var* v, bool prev = false);
   namespace external {
     struct table_t : map<string, void*> {
       table_t();
     };
     extern table_t table;
+    void* get(usr*) throw (not_found);
   } // end of namespace external
   typedef vector<tac*>::const_iterator pc_t;
   bool call_direct(string name, pc_t ret);

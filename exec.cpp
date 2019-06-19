@@ -1014,8 +1014,9 @@ tacsim::pc_t tacsim::call_impl::not_pointer(tacsim::pc_t pc)
   usr* u = v->usr_cast();
   if (!call_usr(u,pc+1)) {
     // name is not user-defined function like "printf". 
-    void* pf = getaddr(ptr->y);
-    const type* T = ptr->y->m_type;  //  T is function_type;
+    assert(u);
+    void* pf = external::get(u);
+    const type* T = u->m_type;  //  T is function_type;
     assert(T->m_id == type::FUNC);
     const func_type* ft = static_cast<const func_type*>(T);
     call_impl::common(ptr->x, pf, ft);
