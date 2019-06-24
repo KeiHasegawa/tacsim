@@ -60,6 +60,33 @@ bool tacsim::call_direct(std::string name, pc_t ra)
 #ifdef CXX_GENERATOR
 namespace tacsim {
   using namespace std;
+  using namespace cxx_compiler;
+  inline void initialize_terminate(const pair<const fundef*, vector<tac*> >& x,
+				   usr::flag2_t mask)
+  {
+    const fundef* fdef = x.first;
+    usr* u = fdef->m_usr;
+    usr::flag2_t flag2 = u->m_flag2;
+    if (flag2 & mask) {
+      vector<tac*> dummy;
+      dummy.push_back(0);
+      call_common(x.first, x.second, dummy.end());
+    }
+  }
+  void call_initialize(const pair<const fundef*, vector<tac*> >& x)
+  {
+    initialize_terminate(x, usr::INITIALIZE_FUNCTION);
+  }
+  void call_terminate(const pair<const fundef*, vector<tac*> >& x)
+  {
+    initialize_terminate(x, usr::TERMINATE_FUNCTION);
+  }
+} // end of namespace tacsim
+#endif // CXX_GENERATOR
+
+#ifdef CXX_GENERATOR
+namespace tacsim {
+  using namespace std;
   using namespace COMPILER;
   string scope_name(scope* p)
   {

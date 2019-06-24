@@ -68,6 +68,10 @@ namespace tacsim {
       offset += al - n;
     return offset;
   }
+#ifdef CXX_GENERATOR
+  void call_initialize(const pair<const fundef*, vector<tac*> >&);
+  void call_terminate(const pair<const fundef*, vector<tac*> >&);
+#endif // CXX_GENERATOR
 }  // end of namespace tacsim
 
 #endif  // _TACSIM_H_

@@ -137,6 +137,9 @@ void generator_last(const COMPILER::generator::last_interface_t* ptr)
     vector<pair<void*, addrof*> >& v = allocate::after_addrof;
     for_each(v.begin(), v.end(), allocate::set_addrof);
     v.clear();
+#ifdef CXX_GENERATOR
+    for_each(begin(*current_funcs), end(*current_funcs), call_initialize);
+#endif // CXX_GENERATOR
     if (!setup() && !args.empty()) {
       if (!m_generator.empty())
 	cerr << m_generator << " : ";
@@ -153,6 +156,9 @@ void generator_last(const COMPILER::generator::last_interface_t* ptr)
         cerr << m_generator << " : ";
       cerr << "`main' function is not defined." << '\n';
     }
+#ifdef CXX_GENERATOR
+    for_each(rbegin(*current_funcs), rend(*current_funcs), call_terminate);
+#endif // CXX_GENERATOR
   }
   catch (not_found nf) {
     const usr* u = nf.m_usr;
