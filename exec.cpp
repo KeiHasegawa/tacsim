@@ -303,7 +303,11 @@ tacsim::pc_t tacsim::add(tacsim::pc_t pc)
   }
   else {
     Tx = Tx->unqualified();
+#ifdef CXX_GENERATOR
+    assert(Tx->m_id == type::POINTER || Tx->m_id == type::REFERENCE);
+#else // CXX_GENERATOR
     assert(Tx->m_id == type::POINTER);
+#endif // CXX_GENERATOR
     const type* Ty = ptr->y->m_type;
     Ty = Ty->unqualified();
     const type* Tz = ptr->z->m_type;
