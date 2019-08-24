@@ -52,6 +52,13 @@ void tacsim::allocate::memory(const COMPILER::scope* ptr)
 {
   using namespace std;
   using namespace COMPILER;
+#ifdef CXX_GENERATOR
+  if (ptr->m_id == scope::TAG) {
+    const tag* tg = static_cast<const tag*>(ptr);
+    if (tg->m_template)
+      return;
+  }
+#endif // CXX_GENERATOR
   const map<string, vector<usr*> >& usrs = ptr->m_usrs;
   for_each(usrs.begin(), usrs.end(), usr1);
   const vector<scope*>& children = ptr->m_children;
