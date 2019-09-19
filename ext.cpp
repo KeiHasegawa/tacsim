@@ -60,7 +60,7 @@ namespace tacsim {
     strncpy_s(dst, size+1, src, -1);
     return dst;
   }
-  char* sbrk(int sz)
+  char* sbrk(size_t sz)
   {
     char* p = (char*)malloc(sz);
     return p ? p : (char*)-1;
@@ -70,6 +70,13 @@ namespace tacsim {
   extern void closedir(){}
 }  // end of namespace tacsim
 #endif // _MSC_VER
+
+namespace tacsim {
+  void* alloc(size_t sz)
+  {
+    return calloc(sz, 1);
+  }
+} // end of namespace tacsim
 
 tacsim::external::table_t::table_t()
 {
@@ -233,7 +240,7 @@ tacsim::external::table_t::table_t()
 #endif // linux
 
 #ifdef CXX_GENERATOR
-  insert(make_pair("new", (void*)malloc));
+  insert(make_pair("new", (void*)alloc));
   insert(make_pair("delete", (void*)free));
 #endif // CXX_GENERATOR
 }
