@@ -55,7 +55,7 @@ void tacsim::allocate::memory(const COMPILER::scope* ptr)
 #ifdef CXX_GENERATOR
   if (ptr->m_id == scope::TAG) {
     const tag* tg = static_cast<const tag*>(ptr);
-    if (tg->m_template)
+    if (tg->m_kind2 == tag::TEMPLATE)
       return;
   }
 #endif // CXX_GENERATOR
