@@ -102,6 +102,7 @@ tacsim::external::table_t::table_t()
   REGISTER_MACRO(stat);
   REGISTER_MACRO(ferror);
   REGISTER_MACRO(vprintf);
+  REGISTER_MACRO(memset);
 
   REGISTER_MACRO_OVERLOAD(acos);
   REGISTER_MACRO_OVERLOAD(asin);
