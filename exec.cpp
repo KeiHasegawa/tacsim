@@ -106,9 +106,9 @@ namespace tacsim {
     }
     return "";
   }
-  struct cmp_signature {
+  struct match {
     usr* m_uy;
-    cmp_signature(usr* y) : m_uy(y) {}
+    match(usr* y) : m_uy(y) {}
     bool operator()(const pair<const fundef*, vector<tac*> >& x)
     {
       const fundef* fun = x.first;
@@ -138,7 +138,18 @@ namespace tacsim {
 	T->encode(osy);
       if (osx.str() != osy.str())
 	return false;
-      return true;
+      usr::flag2_t flag2x =   ux->m_flag2;
+      usr::flag2_t flag2y = m_uy->m_flag2;
+      if (!(flag2x & usr::EXPLICIT_INSTANTIATE))
+	return !(flag2y & usr::EXPLICIT_INSTANTIATE);
+      if (!(flag2y & usr::EXPLICIT_INSTANTIATE))
+	return false;
+      typedef const instantiated_usr IU;
+      IU* iux = static_cast<IU*>(  ux);
+      IU* iuy = static_cast<IU*>(m_uy);
+      const instantiated_usr::SEED& seedx = iux->m_seed;
+      const instantiated_usr::SEED& seedy = iuy->m_seed;
+      return seedx == seedy;
     }
   };
 } // end of namespace tacsim 
@@ -150,8 +161,8 @@ bool tacsim::call_usr(COMPILER::usr* u, pc_t ra)
   using namespace COMPILER;
 #ifdef CXX_GENERATOR
   const vector<pair<const fundef*, vector<tac*> > >& funcs = *current_funcs;
-  vector<pair<const fundef*, vector<tac*> > >::const_iterator p =
-    find_if(funcs.begin(), funcs.end(), cmp_signature(u));
+  typedef vector<pair<const fundef*, vector<tac*> > >::const_iterator IT;
+  IT p = find_if(funcs.begin(), funcs.end(), match(u));
   if (p == funcs.end())
     return false;
   return call_common(p->first, p->second, ra);
