@@ -154,6 +154,10 @@ void tacsim::allocate::usr2(COMPILER::usr* u)
 #ifdef CXX_GENERATOR
   if (flag & usr::OVERLOAD)
     return;
+
+  usr::flag2_t flag2 = u->m_flag2;
+  if (flag2 & usr::PARTIAL_ORDERING)
+    return;
 #endif // CXX_GENERATOR
 
   if (u->isconstant())
