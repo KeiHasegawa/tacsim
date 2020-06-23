@@ -48,24 +48,40 @@ std::pair<COMPILER::var*, void*> tacsim::allocate::conv(const std::pair<const CO
   return make_pair(v, (void*)v);
 }
 
-void tacsim::allocate::memory(const COMPILER::scope* ptr)
+void tacsim::allocate::memory(const COMPILER::scope* ps)
 {
   using namespace std;
   using namespace COMPILER;
 #ifdef CXX_GENERATOR
-  if (ptr->m_id == scope::TAG) {
-    const tag* tg = static_cast<const tag*>(ptr);
-    if (tg->m_flag & tag::TEMPLATE)
+  if (ps->m_id == scope::TAG) {
+    const tag* ptr = static_cast<const tag*>(ps);
+    if (ptr->m_flag & tag::TEMPLATE)
       return;
+    if (ptr->m_flag & tag::INSTANTIATE) {
+      const instantiated_tag* it = static_cast<const instantiated_tag*>(ptr);
+      const instantiated_tag::SEED& seed = it->m_seed;
+      typedef instantiated_tag::SEED::const_iterator IT;
+      IT p = find_if(begin(seed), end(seed),
+		     [](const pair<const type*, var*>& x)
+		     {
+		       const type* T = x.first;
+		       if (!T)
+			 return false;
+		       return T->m_id == type::TEMPLATE_PARAM;
+		     });
+      if (p != end(seed))
+	return;
+    }
   }
 #endif // CXX_GENERATOR
-  const map<string, vector<usr*> >& usrs = ptr->m_usrs;
+  const map<string, vector<usr*> >& usrs = ps->m_usrs;
   for_each(usrs.begin(), usrs.end(), usr1);
-  const vector<scope*>& children = ptr->m_children;
+  const vector<scope*>& children = ps->m_children;
   for_each(children.begin(), children.end(), memory);
 }
 
-void tacsim::allocate::usr1(const std::pair<std::string, std::vector<COMPILER::usr*> >& x)
+void tacsim::allocate::
+usr1(const std::pair<std::string, std::vector<COMPILER::usr*> >& x)
 {
   using namespace std;
   using namespace COMPILER;
@@ -128,7 +144,18 @@ void tacsim::allocate::usr2(COMPILER::usr* u)
   if (is_static(u)) {
     if (loc_mode)
       return;
-    int size = u->m_type->size();
+#ifdef CXX_GENERATOR
+    if (flag & usr::STATIC_DEF) {
+      address_table_t::const_iterator p =
+	find_if(g_static.begin(), g_static.end(),
+		bind2nd(ptr_fun(definition_of), u));
+      if (p != g_static.end())
+	return;
+    }
+#endif // CXX_GENERATOR
+    const type* T = u->m_type;
+    T = T->complete_type();
+    int size = T->size();
     assert(size);
     void* p = g_static[u] = new char[size];
     memset(p, 0, size);
@@ -144,7 +171,8 @@ void tacsim::allocate::usr2(COMPILER::usr* u)
       assert(size);
       memset(g_static[u] = new char[size], 0, size);
     }
-    for_each(value.begin(), value.end(), bind2nd(ptr_fun(set_value),g_static[u]));
+    for_each(value.begin(), value.end(),
+	     bind2nd(ptr_fun(set_value),g_static[u]));
     return;
   }
 
@@ -167,7 +195,8 @@ void tacsim::allocate::usr2(COMPILER::usr* u)
     if (loc_mode)
       return;
     address_table_t::const_iterator p =
-      find_if(g_static.begin(), g_static.end(), bind2nd(ptr_fun(definition_of), u));
+      find_if(g_static.begin(), g_static.end(),
+	      bind2nd(ptr_fun(definition_of), u));
     if (p != g_static.end())
       return;
     const type* T = u->m_type;
