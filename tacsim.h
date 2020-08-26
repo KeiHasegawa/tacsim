@@ -26,7 +26,7 @@ namespace tacsim {
   }  // end of namespace allocate
   struct not_found {
     usr* m_usr;
-  not_found(usr* u) : m_usr(u) {}
+    not_found(usr* u) : m_usr(u) {}
   };
   void* getaddr(var* v, bool prev = false);
   namespace external {
@@ -59,8 +59,7 @@ namespace tacsim {
       delete x.first;
     }
   };
-  typedef const vector<tac*>* CURRENT_CODE_ELEMENT;
-  extern vector<CURRENT_CODE_ELEMENT> current_code;
+  extern vector<const vector<tac*>*> current_code;
   extern vector<pair<void*, const type*> > parameters;
   inline uint64_t align(uint64_t offset, uint64_t al)
   {
@@ -71,6 +70,9 @@ namespace tacsim {
 #ifdef CXX_GENERATOR
   void call_initialize(const pair<const fundef*, vector<tac*> >&);
   void call_terminate(const pair<const fundef*, vector<tac*> >&);
+  namespace except {
+    extern const type* T;
+  } // end of namespace except
 #endif // CXX_GENERATOR
 }  // end of namespace tacsim
 

@@ -11,7 +11,7 @@ namespace tacsim {
   using namespace std;
   using namespace COMPILER;
   const vector<pair<const fundef*, vector<tac*> > >* current_funcs;
-  vector<CURRENT_CODE_ELEMENT> current_code;
+  vector<const vector<tac*>*> current_code;
   namespace exec {
     pc_t select(pc_t pc);
     typedef pc_t FUNC(pc_t);
@@ -19,15 +19,17 @@ namespace tacsim {
       table_t();
     } table;
   }  // end of namespace exec
-  struct return_address {
-    static stack<pc_t> m_stack;
-    return_address(pc_t x) { m_stack.push(x); }
-    ~return_address() { m_stack.pop(); }
-  };
-  stack<pc_t> return_address::m_stack;
+  vector<pc_t> return_address;
+#ifdef CXX_GENERATOR
+  namespace except {
+    bool flag;
+    void* ptr;
+    const type* T;
+  } // end of namespace except
+#endif // CXX_GENERATOR
   bool call_common(const fundef* fun, const vector<tac*>& code, pc_t ra)
   {
-    return_address sweeper(ra);
+    return_address.push_back(ra);
     allocate::entrance(fun->m_param);
     current_code.push_back(&code);
     pc_t pc = code.begin();
@@ -36,9 +38,18 @@ namespace tacsim {
       pc = exec::select(pc);
       if (ptr->m_id == tac::RETURN)
 	break;
+#ifdef CXX_GENERATOR
+      if (except::flag) {
+	pc = find_if(pc, end(code),
+		     [](const tac* ptr){ return ptr->m_id == tac::HERE; });
+	if (pc != end(code))
+	  except::flag = false;
+      }
+#endif // CXX_GENERATOR
     }
     current_code.pop_back();
     allocate::exit(fun->m_param);
+    return_address.pop_back();
     return true;
   }
 } // end of namespace tacsim
@@ -214,6 +225,20 @@ namespace tacsim {
   pc_t vastart(pc_t pc);
   pc_t vaarg(pc_t pc);
   pc_t vaend(pc_t pc);
+#ifdef CXX_GENERATOR
+  pc_t alloce(pc_t pc);
+  pc_t throwe(pc_t pc);
+  pc_t rethrow(pc_t pc);
+  pc_t try_begin(pc_t pc);
+  pc_t try_end(pc_t pc);
+  pc_t here(pc_t pc);
+  pc_t here_reason(pc_t pc);
+  pc_t here_info(pc_t pc);
+  pc_t there(pc_t pc);
+  pc_t unwind_resume(pc_t pc);
+  pc_t catch_begin(pc_t pc);
+  pc_t catch_end(pc_t pc);
+#endif // CXX_GENERATOR
 } // end of namespace tacsim
 
 tacsim::exec::table_t::table_t()
@@ -248,6 +273,20 @@ tacsim::exec::table_t::table_t()
   insert(make_pair(tac::VASTART, vastart));
   insert(make_pair(tac::VAARG, vaarg));
   insert(make_pair(tac::VAEND, vaend));
+#ifdef CXX_GENERATOR
+  insert(make_pair(tac::ALLOCE, alloce));
+  insert(make_pair(tac::THROW, throwe));
+  insert(make_pair(tac::RETHROW, rethrow));
+  insert(make_pair(tac::TRY_BEGIN, try_begin));
+  insert(make_pair(tac::TRY_END, try_end));
+  insert(make_pair(tac::HERE, here));
+  insert(make_pair(tac::HERE_REASON, here_reason));
+  insert(make_pair(tac::HERE_INFO, here_info));
+  insert(make_pair(tac::THERE, there));
+  insert(make_pair(tac::UNWIND_RESUME, unwind_resume));
+  insert(make_pair(tac::CATCH_BEGIN, catch_begin));
+  insert(make_pair(tac::CATCH_END, catch_end));
+#endif // CXX_GENERATOR
 }
 
 tacsim::pc_t tacsim::assign(tacsim::pc_t pc)
@@ -1247,7 +1286,7 @@ tacsim::pc_t tacsim::return_(tacsim::pc_t pc)
   using namespace COMPILER;
 
   tac* ptr = *pc;
-  pc = return_address::m_stack.top();
+  pc = return_address.back();
   tac* call = *(pc - 1);
   if (ptr->y) {
     const type* T = ptr->y->m_type;
@@ -1586,3 +1625,181 @@ tacsim::pc_t tacsim::vaarg(tacsim::pc_t pc)
 }
 
 tacsim::pc_t tacsim::vaend(tacsim::pc_t pc){ return pc + 1; }
+
+#ifdef CXX_GENERATOR
+tacsim::pc_t tacsim::alloce(tacsim::pc_t pc)
+{
+  tac* ptr = *pc;
+  const type* T = ptr->y->m_type;
+  uint64_t size;
+  if (T->size() == 4)
+    size = *(uint32_t*)getaddr(ptr->y);
+  else {
+    assert(T->size() == 8);
+    size = *(uint64_t*)getaddr(ptr->y);
+  }
+  void* p = new char[size];
+  void* x = getaddr(ptr->x);
+  *(void**)x = p;
+  return pc + 1;
+}
+
+tacsim::pc_t tacsim::throwe(tacsim::pc_t pc)
+{
+  tac* ptr = *pc;
+  assert(!except::ptr);
+  except::ptr = *(void**)getaddr(ptr->y);
+  throw3ac* tp = static_cast<throw3ac*>(ptr);
+  assert(!except::T);
+  except::T = tp->m_type;
+  assert(!except::flag);
+  except::flag = true;
+  return pc + 1;
+}
+
+tacsim::pc_t tacsim::rethrow(tacsim::pc_t pc)
+{
+  assert(!except::flag);
+  except::flag = true;
+  assert(except::ptr);
+  assert(except::T);
+  return pc + 1;
+}
+
+tacsim::pc_t tacsim::try_begin(tacsim::pc_t pc){ return pc + 1; }
+
+tacsim::pc_t tacsim::try_end(tacsim::pc_t pc){ return pc + 1; }
+
+tacsim::pc_t tacsim::here(tacsim::pc_t pc){ return pc + 1; }
+
+namespace tacsim {
+  namespace here_reason_impl {
+    bool derived(base* bp, tag* py)
+    {
+      tag* ptr = bp->m_tag;
+      if (ptr == py)
+	return true;
+      vector<base*>* v = ptr->m_bases;
+      if (!v)
+	return false;
+      typedef vector<base*>::const_iterator IT;
+      IT p = find_if(begin(*v), end(*v), bind2nd(ptr_fun(derived), py));
+      return p != end(*v);
+    }
+    bool caught(tac* ptr, int* nth)
+    {
+      if (ptr->m_id != tac::CATCH_BEGIN)
+	return false;
+      ++*nth;
+      var* x = ptr->x;
+      if (!x)
+	return true;
+      const type* T = x->m_type;
+      T = T->unqualified();
+      if (T->m_id == type::REFERENCE) {
+	typedef const reference_type RT;
+	RT* rt = static_cast<RT*>(T);
+	T = rt->referenced_type();
+	T = T->unqualified();
+      }
+      if (T->compatible(except::T))
+	return true;
+      tag* px = except::T->get_tag();
+      if (!px)
+	return false;
+      tag* py = T->get_tag();
+      if (!py)
+	return false;
+      vector<base*>* pb = px->m_bases;
+      if (!pb)
+	return false;
+      typedef vector<base*>::const_iterator IT;
+      IT p = find_if(begin(*pb), end(*pb), bind2nd(ptr_fun(derived), py));
+      return p != end(*pb);
+    }
+  } // end of namespace here_reason_impl
+} // end of namepace tacsim
+
+tacsim::pc_t tacsim::here_reason(tacsim::pc_t pc)
+{
+  using namespace here_reason_impl;
+  assert(!current_code.empty());
+  const vector<tac*>* v = current_code.back();
+  int nth = 0;
+  typedef vector<tac*>::const_iterator IT;
+  IT p = find_if(pc + 1, end(*v), bind2nd(ptr_fun(caught), &nth));
+  if (p == end(*v))
+    ++nth;
+  tac* ptr = *pc;
+  void* x = getaddr(ptr->x);
+  *(int*)x = nth;
+  return pc + 1;
+}
+
+tacsim::pc_t tacsim::here_info(tacsim::pc_t pc)
+{
+  // t0 := here_info
+  // where, t0 is used
+  // t1 := catch_begin t0
+  // unwind_resume t0
+  // But on tacsimxx.dll envorionment, throwe_impl variables conver
+  // this function. So nothing to be done for `t0'
+  return pc + 1;
+}
+
+tacsim::pc_t tacsim::there(tacsim::pc_t pc)
+{
+  // 3 address code set for exception handling is designed:
+  //
+  // For `rethrow', the landing point is `there' like as
+  // for `throw', the landing point is `here'.
+  //
+  // But to simplify at tacsimxx.dll environment, `there' is not
+  // used for landing point of `rethrow'
+  assert(0);  // So not reached
+  return pc + 1;
+}
+
+tacsim::pc_t tacsim::unwind_resume(tacsim::pc_t pc)
+{
+  // unwind_resume y
+  // where `y' is not referenced at tacsimxx.dll envorionment.
+  // See also `here_info' comment
+  assert(!except::flag);
+  except::flag = true;
+  assert(except::ptr);
+  assert(except::T);
+  return pc + 1;
+}
+
+tacsim::pc_t tacsim::catch_begin(tacsim::pc_t pc)
+{
+  // x := catch_begin y
+  // where `y' is not referenced at tacsimxx.dll envorionment.
+  // See also `here_info' comment
+  tac* ptr = *pc;
+  if (!ptr->x)
+    return pc + 1;
+  void* x = getaddr(ptr->x);
+  const type* T = ptr->x->m_type;
+  T = T->unqualified();
+  if (T->m_id == type::REFERENCE)
+    *(void**)x = except::ptr;
+  else {
+    int size = except::T->size();
+    memcpy(x, except::ptr, size);
+  }
+  return pc + 1;
+}
+
+tacsim::pc_t tacsim::catch_end(tacsim::pc_t pc)
+{
+  assert(except::ptr);
+  delete except::ptr;
+  except::ptr = 0;
+  assert(except::T);
+  except::T = 0;
+  return pc + 1;
+}
+
+#endif // CXX_GENERATOR

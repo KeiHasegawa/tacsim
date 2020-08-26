@@ -158,6 +158,12 @@ void generator_last(const COMPILER::generator::last_interface_t* ptr)
     }
 #ifdef CXX_GENERATOR
     for_each(rbegin(*current_funcs), rend(*current_funcs), call_terminate);
+    if (except::T) {
+      cerr << "Not caughted exception `";
+      except::T->decl(cerr, "");
+      cerr << "' was thrown." << '\n';
+      exit(1);
+    }
 #endif // CXX_GENERATOR
   }
   catch (not_found nf) {
