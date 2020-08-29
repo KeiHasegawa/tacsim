@@ -460,9 +460,9 @@ void tacsim::allocate::entrance(const COMPILER::param_scope* ptr)
   int n = accumulate(parameters.begin(), parameters.end(), 0, add_size);
   char* p = n ? new char[n+16] : 0;
   param_area.push(p);
-  accumulate(parameters.begin(), parameters.end(), p, save_param);
+  (void)accumulate(parameters.begin(), parameters.end(), p, save_param);
   const vector<usr*>& order = ptr->m_order;
-  accumulate(order.begin(), order.end(), p, decide_address);
+  (void)accumulate(order.begin(), order.end(), p, decide_address);
   for_each(parameters.begin(), parameters.end(), destroy<void*, const type*>()); parameters.clear();
 
   loc_mode = true;
