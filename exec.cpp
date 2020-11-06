@@ -37,13 +37,13 @@ namespace tacsim {
       const tac* ptr = *pc;
       pc = exec::select(pc);
       if (ptr->m_id == tac::RETURN)
-	break;
+        break;
 #ifdef CXX_GENERATOR
       if (except::flag) {
-	pc = find_if(pc, end(code),
-		     [](const tac* ptr){ return ptr->m_id == tac::HERE; });
-	if (pc != end(code))
-	  except::flag = false;
+        pc = find_if(pc, end(code),
+                     [](const tac* ptr){ return ptr->m_id == tac::HERE; });
+        if (pc != end(code))
+          except::flag = false;
       }
 #endif // CXX_GENERATOR
     }
@@ -73,7 +73,7 @@ namespace tacsim {
   using namespace std;
   using namespace cxx_compiler;
   inline void initialize_terminate(const pair<const fundef*, vector<tac*> >& x,
-				   usr::flag2_t mask)
+                                   usr::flag2_t mask)
   {
     const fundef* fdef = x.first;
     usr* u = fdef->m_usr;
@@ -125,13 +125,13 @@ namespace tacsim {
       const fundef* fun = x.first;
       const usr* ux = fun->m_usr;
       if (ux->m_name != m_uy->m_name)
-	return false;
+        return false;
       if (ux->m_flag & usr::C_SYMBOL)
-	return m_uy->m_flag & usr::C_SYMBOL;
+        return m_uy->m_flag & usr::C_SYMBOL;
       if (m_uy->m_flag & usr::C_SYMBOL)
-	return false;
+        return false;
       if (scope_name(ux->m_scope) != scope_name(m_uy->m_scope))
-	return false;
+        return false;
       const type* Tx =   ux->m_type;
       const type* Ty = m_uy->m_type;
       assert(Tx->m_id == type::FUNC);
@@ -143,18 +143,18 @@ namespace tacsim {
       const vector<const type*>& paramy = fty->param();
       ostringstream osx;
       for (auto T : paramx)
-	T->encode(osx);
+        T->encode(osx);
       ostringstream osy;
       for (auto T : paramy)
-	T->encode(osy);
+        T->encode(osy);
       if (osx.str() != osy.str())
-	return false;
+        return false;
       usr::flag2_t flag2x =   ux->m_flag2;
       usr::flag2_t flag2y = m_uy->m_flag2;
       if (!(flag2x & usr::EXPLICIT_INSTANTIATE))
-	return !(flag2y & usr::EXPLICIT_INSTANTIATE);
+        return !(flag2y & usr::EXPLICIT_INSTANTIATE);
       if (!(flag2y & usr::EXPLICIT_INSTANTIATE))
-	return false;
+        return false;
       typedef const instantiated_usr IU;
       IU* iux = static_cast<IU*>(  ux);
       IU* iuy = static_cast<IU*>(m_uy);
@@ -1056,9 +1056,9 @@ namespace tacsim {
       cmp_usr(void* pf) : m_pf(pf) {}
       bool operator()(const pair<const fundef*, vector<tac*> >& x)
       {
-	const fundef* func = x.first;
-	usr* u = func->m_usr;
-	return u == (usr*)m_pf;
+        const fundef* func = x.first;
+        usr* u = func->m_usr;
+        return u == (usr*)m_pf;
       }
     };
     void common(COMPILER::var* x, void* pf, const func_type*);
@@ -1678,10 +1678,10 @@ namespace tacsim {
     {
       tag* ptr = bp->m_tag;
       if (ptr == py)
-	return true;
+        return true;
       vector<base*>* v = ptr->m_bases;
       if (!v)
-	return false;
+        return false;
       typedef vector<base*>::const_iterator IT;
       IT p = find_if(begin(*v), end(*v), bind2nd(ptr_fun(derived), py));
       return p != end(*v);
@@ -1689,30 +1689,40 @@ namespace tacsim {
     bool caught(tac* ptr, int* nth)
     {
       if (ptr->m_id != tac::CATCH_BEGIN)
-	return false;
+        return false;
       ++*nth;
       var* x = ptr->x;
       if (!x)
-	return true;
+        return true;
       const type* T = x->m_type;
       T = T->unqualified();
       if (T->m_id == type::REFERENCE) {
-	typedef const reference_type RT;
-	RT* rt = static_cast<RT*>(T);
-	T = rt->referenced_type();
-	T = T->unqualified();
+        typedef const reference_type RT;
+        RT* rt = static_cast<RT*>(T);
+        T = rt->referenced_type();
+        T = T->unqualified();
       }
       if (T->compatible(except::T))
-	return true;
+        return true;
+      if (except::T->m_id == type::POINTER) {
+        if (T->m_id == type::POINTER) {
+          typedef const pointer_type PT;
+          PT* pt = static_cast<PT*>(T);
+          const type* R = pt->referenced_type();
+          R = R->unqualified();
+          if (R->m_id == type::VOID)
+            return true;
+        }
+      }
       tag* px = except::T->get_tag();
       if (!px)
-	return false;
+        return false;
       tag* py = T->get_tag();
       if (!py)
-	return false;
+        return false;
       vector<base*>* pb = px->m_bases;
       if (!pb)
-	return false;
+        return false;
       typedef vector<base*>::const_iterator IT;
       IT p = find_if(begin(*pb), end(*pb), bind2nd(ptr_fun(derived), py));
       return p != end(*pb);

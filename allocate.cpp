@@ -62,15 +62,15 @@ void tacsim::allocate::memory(const COMPILER::scope* ps)
       const instantiated_tag::SEED& seed = it->m_seed;
       typedef instantiated_tag::SEED::const_iterator IT;
       IT p = find_if(begin(seed), end(seed),
-		     [](const pair<const type*, var*>& x)
-		     {
-		       const type* T = x.first;
-		       if (!T)
-			 return false;
-		       return T->m_id == type::TEMPLATE_PARAM;
-		     });
+                     [](const pair<const type*, var*>& x)
+                     {
+                       const type* T = x.first;
+                       if (!T)
+                	 return false;
+                       return T->m_id == type::TEMPLATE_PARAM;
+                     });
       if (p != end(seed))
-	return;
+        return;
     }
   }
 #endif // CXX_GENERATOR
@@ -99,7 +99,7 @@ namespace tacsim {
       usr::flag_t flag = u->m_flag;
 #ifdef CXX_GENERATOR
       if (flag & usr::STATIC_DEF)
-	return true;
+        return true;
       scope::id_t id = u->m_scope->m_id;
       return (flag & usr::STATIC) && id != scope::TAG;
 #else // CXX_GENERATOR
@@ -147,10 +147,10 @@ void tacsim::allocate::usr2(COMPILER::usr* u)
 #ifdef CXX_GENERATOR
     if (flag & usr::STATIC_DEF) {
       address_table_t::const_iterator p =
-	find_if(g_static.begin(), g_static.end(),
-		bind2nd(ptr_fun(definition_of), u));
+        find_if(g_static.begin(), g_static.end(),
+                bind2nd(ptr_fun(definition_of), u));
       if (p != g_static.end())
-	return;
+        return;
     }
 #endif // CXX_GENERATOR
     const type* T = u->m_type;
@@ -172,7 +172,7 @@ void tacsim::allocate::usr2(COMPILER::usr* u)
       memset(g_static[u] = new char[size], 0, size);
     }
     for_each(value.begin(), value.end(),
-	     bind2nd(ptr_fun(set_value),g_static[u]));
+             bind2nd(ptr_fun(set_value),g_static[u]));
     return;
   }
 
@@ -196,7 +196,7 @@ void tacsim::allocate::usr2(COMPILER::usr* u)
       return;
     address_table_t::const_iterator p =
       find_if(g_static.begin(), g_static.end(),
-	      bind2nd(ptr_fun(definition_of), u));
+              bind2nd(ptr_fun(definition_of), u));
     if (p != g_static.end())
       return;
     const type* T = u->m_type;

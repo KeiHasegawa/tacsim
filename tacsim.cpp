@@ -142,11 +142,11 @@ void generator_last(const COMPILER::generator::last_interface_t* ptr)
 #endif // CXX_GENERATOR
     if (!setup() && !args.empty()) {
       if (!m_generator.empty())
-	cerr << m_generator << " : ";
+        cerr << m_generator << " : ";
       cerr << "--arg option is specified but `main' function is not";
       cerr << " declared as `int main(int, char**)'" << '\n';
       if (!m_generator.empty())
-	cerr << m_generator << " : ";
+        cerr << m_generator << " : ";
       cerr << "--arg option is just ignored." << '\n';
     }
     vector<tac*> dummy;
