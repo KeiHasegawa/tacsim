@@ -48,6 +48,94 @@ std::pair<COMPILER::var*, void*> tacsim::allocate::conv(const std::pair<const CO
   return make_pair(v, (void*)v);
 }
 
+#ifdef CXX_GENERATOR
+namespace tacsim {
+  const COMPILER::instantiated_tag::SEED* get_seed(const COMPILER::tag* ptr)
+  {
+    using namespace COMPILER;
+    tag::flag_t flag = ptr->m_flag;
+    if (flag & tag::INSTANTIATE) {
+      typedef const instantiated_tag IT;
+      IT* it = static_cast<IT*>(ptr);
+      return &it->m_seed;
+    }
+    if (flag & tag::SPECIAL_VER) {
+      typedef const special_ver_tag SV;
+      SV* sv = static_cast<SV*>(ptr);
+      return &sv->m_key;
+    }
+    return 0;
+  }
+  const COMPILER::type* reduce(const COMPILER::type* T)
+  {
+    using namespace COMPILER;
+    T = T->unqualified();
+    if (T->m_id == type::POINTER) {
+      typedef const pointer_type PT;
+      PT* pt = static_cast<PT*>(T);
+      T = pt->referenced_type();
+      return reduce(T);
+    }
+    if (T->m_id == type::REFERENCE) {
+      typedef const reference_type RT;
+      RT* rt = static_cast<RT*>(T);
+      T = rt->referenced_type();
+      return reduce(T);
+    }
+    if (T->m_id == type::ARRAY) {
+      typedef const array_type AT;
+      AT* at = static_cast<AT*>(T);
+      T = at->element_type();
+      return reduce(T);
+    }
+    return T;
+  }
+  bool incomplete(const std::pair<const COMPILER::type*, COMPILER::var*>& x)
+  {
+    using namespace std;
+    using namespace COMPILER;
+    const type* T = x.first;
+    if (!T) {
+      var* v = x.second;
+      if (!v)
+	return false;
+      if (v->addrof_cast())
+        return false;
+      assert(v->usr_cast());
+      usr* u = static_cast<usr*>(v);
+      return u->m_flag2 & usr::TEMPL_PARAM;
+    }
+    T = reduce(T);
+    if (T->m_id == type::TEMPLATE_PARAM)
+      return true;
+    if (T->m_id == type::VARRAY)
+      return true;
+    if (T->m_id == type::POINTER_MEMBER) {
+      typedef const pointer_member_type PM;
+      auto pm = static_cast<PM*>(T);
+      T = pm->referenced_type();
+      if (incomplete(make_pair(T, (var*)0)))
+	return true;
+      const tag* ptr = pm->ctag();
+      T = ptr->m_types.first;
+      return incomplete(make_pair(T, (var*)0));
+    }
+    if (tag* ptr = T->get_tag()) {
+      if (ptr->m_flag & tag::TYPENAMED) {
+        if (T->m_id == type::INCOMPLETE_TAGGED)
+          return true;
+      }
+      if (const instantiated_tag::SEED* seed = get_seed(ptr)) {
+        typedef instantiated_tag::SEED::const_iterator IT;
+        IT p = find_if(begin(*seed), end(*seed), incomplete);
+        return p != end(*seed);
+      }
+    }
+    return false;
+  }
+} // end of namespace tacsim
+#endif // CXX_GENERATOR
+
 void tacsim::allocate::memory(const COMPILER::scope* ps)
 {
   using namespace std;
@@ -55,22 +143,13 @@ void tacsim::allocate::memory(const COMPILER::scope* ps)
 #ifdef CXX_GENERATOR
   if (ps->m_id == scope::TAG) {
     const tag* ptr = static_cast<const tag*>(ps);
-    if (ptr->m_flag & tag::TEMPLATE)
+    tag::flag_t flag = ptr->m_flag;
+    if (flag & tag::TEMPLATE)
       return;
-    if (ptr->m_flag & tag::INSTANTIATE) {
-      const instantiated_tag* it = static_cast<const instantiated_tag*>(ptr);
-      const instantiated_tag::SEED& seed = it->m_seed;
-      typedef instantiated_tag::SEED::const_iterator IT;
-      IT p = find_if(begin(seed), end(seed),
-                     [](const pair<const type*, var*>& x)
-                     {
-                       const type* T = x.first;
-                       if (!T)
-                	 return false;
-                       return T->m_id == type::TEMPLATE_PARAM;
-                     });
-      if (p != end(seed))
-        return;
+    if (auto seed = get_seed(ptr)) {
+      auto p = find_if(begin(*seed), end(*seed), incomplete);
+      if (p != end(*seed))
+	return;
     }
   }
 #endif // CXX_GENERATOR
@@ -199,6 +278,10 @@ void tacsim::allocate::usr2(COMPILER::usr* u)
               bind2nd(ptr_fun(definition_of), u));
     if (p != g_static.end())
       return;
+#ifdef CXX_GENERATOR
+    if (flag2 & usr::ALIAS)
+      return;
+#endif // CXX_GENERATOR
     const type* T = u->m_type;
     int size = T->size();
     assert(size);
