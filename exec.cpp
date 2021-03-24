@@ -238,6 +238,7 @@ namespace tacsim {
   pc_t unwind_resume(pc_t pc);
   pc_t catch_begin(pc_t pc);
   pc_t catch_end(pc_t pc);
+  pc_t dcast(pc_t pc);
 #endif // CXX_GENERATOR
 } // end of namespace tacsim
 
@@ -286,6 +287,7 @@ tacsim::exec::table_t::table_t()
   insert(make_pair(tac::UNWIND_RESUME, unwind_resume));
   insert(make_pair(tac::CATCH_BEGIN, catch_begin));
   insert(make_pair(tac::CATCH_END, catch_end));
+  insert(make_pair(tac::DCAST, dcast));
 #endif // CXX_GENERATOR
 }
 
@@ -1812,4 +1814,72 @@ tacsim::pc_t tacsim::catch_end(tacsim::pc_t pc)
   return pc + 1;
 }
 
+namespace tacsim {
+  namespace dcast_impl {
+    using namespace COMPILER;
+    inline bool help(base* bp, const record_type* recx)
+    {
+      tag* ptr = bp->m_tag;
+      const type* T = ptr->m_types.second;
+      return T->compatible(recx);
+    }
+    inline bool match(const type* T, const record_type* recx)
+    {
+      if (T->compatible(recx))
+	return true;
+      tag* ptr = T->get_tag();
+      assert(ptr);
+      auto bases = ptr->m_bases;
+      if (!bases)
+	return false;
+      auto p = find_if(begin(*bases), end(*bases),
+		       bind2nd(ptr_fun(help), recx));
+      return p != end(*bases);
+    }
+  } // end of namespace dcast_impl
+} // end of namespace tacsim
+
+tacsim::pc_t tacsim::dcast(tacsim::pc_t pc)
+{
+  tac* ptr = *pc;
+  const type* Tx = ptr->x->m_type;
+  const type* Ty = ptr->y->m_type;
+  Tx = Tx->unqualified();
+  Ty = Ty->unqualified();
+  assert(Tx->m_id == type::POINTER);
+  assert(Ty->m_id == type::POINTER);
+  auto px = static_cast<const pointer_type*>(Tx);
+  auto py = static_cast<const pointer_type*>(Ty);
+  Tx = px->referenced_type();
+  Ty = py->referenced_type();
+  Tx = Tx->unqualified();
+  Ty = Ty->unqualified();
+  assert(Tx->m_id == type::RECORD);
+  assert(Ty->m_id == type::RECORD);
+  auto recx = static_cast<const record_type*>(Tx);
+  auto recy = static_cast<const record_type*>(Ty);
+  const auto& member = recy->member();
+  auto p = find_if(begin(member), end(member),
+		   [](usr* u){return u->m_name == ".vbptr"; });
+  int offset = (p == end(member)) ? 0 : sizeof(void*);
+  void* y = getaddr(ptr->y);
+  void* vfptr = *(void**)((char*)y+offset);
+  void* vftbl = *(void**)vfptr;
+  void* tinfo = (char*)vftbl - sizeof(void*);
+  const type* T = *(type**)tinfo;
+  if (dcast_impl::match(T, recx)) {
+    void* offptr = (char*)tinfo - sizeof(void*);
+    void* val = *(void**)offptr;
+    int off = (int)val;
+    assign(pc);
+    if (off) {
+      void* x = getaddr(ptr->x);
+      *(char**)x += off;
+    }
+    return pc + 1;
+  }
+  int sz = px->size();
+  memset(getaddr(ptr->x), 0, sz);
+  return pc + 1;
+}
 #endif // CXX_GENERATOR

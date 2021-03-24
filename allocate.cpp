@@ -476,9 +476,19 @@ void* tacsim::getaddr(COMPILER::var* v, bool prev)
     if (void* r = p->second)
       return r;
   }
+#ifdef CXX_GENERATOR
+  usr* u = v->usr_cast();
+  if (!u) {
+    auto ti = static_cast<type_information*>(v);
+    const type* T = ti->m_T;
+    return reinterpret_cast<void*>(const_cast<type*>(T));
+  }
+#else  // CXX_GENERATOR
   usr* u = v->usr_cast();
   assert(u);
-  p = find_if(g_static.begin(), g_static.end(), bind2nd(ptr_fun(definition_of), u));
+#endif  // CXX_GENERATOR
+  p = find_if(g_static.begin(), g_static.end(),
+	      bind2nd(ptr_fun(definition_of), u));
   if (p != g_static.end()) {
     assert(p->second);
     return p->second;
