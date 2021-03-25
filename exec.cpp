@@ -1869,8 +1869,7 @@ tacsim::pc_t tacsim::dcast(tacsim::pc_t pc)
   const type* T = *(type**)tinfo;
   if (dcast_impl::match(T, recx)) {
     void* offptr = (char*)tinfo - sizeof(void*);
-    void* val = *(void**)offptr;
-    int off = (int)val;
+    ptrdiff_t off = *(ptrdiff_t*)offptr;
     assign(pc);
     if (off) {
       void* x = getaddr(ptr->x);
