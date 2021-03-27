@@ -57,6 +57,19 @@ int generator_wchar_type()
   return (int)type::USHORT;
 }
 
+#ifdef _MSC_VER
+extern "C" DLL_EXPORT
+int generator_ptrdiff_type()
+{
+    using namespace COMPILER;
+#ifdef WIN32
+    return (int)type::INT;
+#else // WIN32
+    return (int)type::LONGLONG;
+#endif // WIN32
+}
+#endif // _MSC_VER
+
 namespace tacsim {
   using namespace std;
   string m_generator;
